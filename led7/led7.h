@@ -3,15 +3,6 @@
  *  (http://www.paralight.us/uploads/pdf/A-574G.pdf)
  */
 
-// TODO : convert in namespace Led7::setup, display, shift, send
-
-// TODO : add roll() methods to roll from a value to another in 3 steps:
-//  display (old value && mask without '.') <<3 | (new value && mask without '.') >>6
-// then <<6 | >>3
-// then new value
-// => must store old value, or at least its segment mask in mask order to be able to << it
-// => must include setInterval, create an interval and release it after step 3
-
 #ifndef LED_7_H
 #define LED_7_H 1
 

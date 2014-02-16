@@ -1,0 +1,5 @@
+abcdefghijklmnop
+qrstuvwxyzABCDEF
+GHIJKLMNOPQRSTUV
+WXYZ0123456789!?
+,.:;*+-/\@'"& =_
