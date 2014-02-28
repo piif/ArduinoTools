@@ -1,29 +1,25 @@
-/**
- * minimal library to handle a A-574G 7 segments 4 digits display
- *  (http://www.paralight.us/uploads/pdf/A-574G.pdf)
- */
 
 #ifndef LED_7_H
 #define LED_7_H 1
 
 #include <Arduino.h>
 
-/*
- * number of digits handled by this display
- */
-#define LED7_NB_DIGITS 4
-
 /**
  * list of all characters we can display
  */
 #define LED7_CHARS "0123456789. abcdefghijklmnopqrstuvwxyz?-_'"
 
-namespace Led7 {
+class Led7 {
+public:
+	/*
+	 * number of digits handled by this display
+	 */
+	byte nbDigits;
 
 	/**
 	 * initialize pinout setup for display
 	 */
-	void setup();
+	Led7();
 
 	/**
 	 * actually send current value of a digit to the device
@@ -61,9 +57,17 @@ namespace Led7 {
 	/**
 	 * number of calls to send() method to wait between each step of roll effect
 	 */
-	extern int rollSpeed;
+	int rollSpeed;
 
 	void log(byte value);
 
-}
+//protected:
+	// current segments to light on display
+	volatile byte *toDisplay;
+	// segments lighted on before a roll effect was launched
+	volatile byte *toDisplayBefore;
+
+	byte getSegments(char c);
+	virtual void updateDisplay(byte pos, byte segments) = 0;
+};
 #endif

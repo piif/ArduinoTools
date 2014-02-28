@@ -1,68 +1,6 @@
-#include "led7.h"
-
-// TODO : WORKS ONLY FOR ATmega328P, ADAPT FOR MEGA !!!
 
 #include <Arduino.h>
-
-#ifdef INSIDE
-// display pluged with digits "inside" arduino
-/* display selection pins (+) */
-#define D0 2
-#define D1 5
-#define D2 6
-#define D3 8
-
-/* segment selection pins (-) */
-#define St 3
-#define SL 4
-#define SR 7
-#define Sm 9
-#define Sl 13
-#define Sr 10
-#define Sb 12
-#define Sp 11
-#else
-// display pluged with digits "outside" arduino
-/* display selection pins (+) */
-#define D0 13
-#define D1 10
-#define D2  9
-#define D3  7
-
-/* segment selection pins (-) */
-#define St 12
-#define SL 11
-#define SR  8
-#define Sm  6
-#define Sl  2
-#define Sr  5
-#define Sb  3
-#define Sp  4
-#endif
-
-/*
- mapping example INSIDE
-    lbprm3R21Lt0
-    11011010011000
-1 = 11001000011100 = 12828
-3 = 10000000110000 = 8240
-5 = 10000011000000 = 8384
-7 = 11001100010000 = 13072
- OUTSIDE
-    0tL12R3mrpbl
-    01100100111100
-  1101110101111111
-111101100101111111
-*/
-
-// all segments bits to 1 and display bits to 0
-#define ALL_OFF ( (word) ( \
-	1<<St | 1<<SL | 1<<SR | 1<<Sm |  \
-	1<<Sl | 1<<Sr | 1<<Sb | 1<<Sp )  )
-
-// all position bits to 0, other bits to 1 => can be and'ed with segment mask to force
-// to display at a given position
-#define POSITION_MASK ( (word) ~(1<<D0 | 1<<D1 | 1<<D2 | 1<<D3) )
+#include "led7.h"
 
 const char *mapChars = LED7_CHARS;
 
@@ -113,30 +51,11 @@ byte mapSegments[] = {
 	0b01000000, // '
 };
 
-// current segments to light on display
-volatile byte toDisplay[LED7_NB_DIGITS];
-// segments lighted on before a roll effect was launched
-volatile byte toDisplayBefore[LED7_NB_DIGITS];
-
-// current mask to send to display
-volatile word toSend[LED7_NB_DIGITS];
-
-void Led7::setup() {
-	pinMode(D0, OUTPUT);
-	pinMode(D1, OUTPUT);
-	pinMode(D2, OUTPUT);
-	pinMode(D3, OUTPUT);
-	pinMode(St, OUTPUT);
-	pinMode(SL, OUTPUT);
-	pinMode(SR, OUTPUT);
-	pinMode(Sm, OUTPUT);
-	pinMode(Sl, OUTPUT);
-	pinMode(Sr, OUTPUT);
-	pinMode(Sb, OUTPUT);
-	pinMode(Sp, OUTPUT);
+Led7::Led7() {
+	rollSpeed = 100;
 }
 
-byte getSegments(char c) {
+byte Led7::getSegments(char c) {
 	int i = 0;
 	const char *ptr = mapChars;
 	// no upper letters in the map => convert them to lower.
@@ -152,38 +71,6 @@ byte getSegments(char c) {
 	}
 	return 0;
 }
-
-word prepareForSegment(byte s) {
-	// start with all segments off (HIGH), digit bit off (LOW),
-	// other bits = 0
-	int res = ALL_OFF;
-	// then light on (LOW) segments ON in mapChars
-	if (s & (1 << 7)) res ^= 1 << St;
-	if (s & (1 << 6)) res ^= 1 << SL;
-	if (s & (1 << 5)) res ^= 1 << SR;
-	if (s & (1 << 4)) res ^= 1 << Sm;
-	if (s & (1 << 3)) res ^= 1 << Sl;
-	if (s & (1 << 2)) res ^= 1 << Sr;
-	if (s & (1 << 1)) res ^= 1 << Sb;
-	if (s & (1 << 0)) res ^= 1 << Sp;
-	return res;
-}
-
-/**
- * modify given segment map to force it's display position
- */
-word prepareForPos(word map, byte pos) {
-	switch(pos) {
-	case 0: return (map & POSITION_MASK) | (1<<D0);
-	case 1: return (map & POSITION_MASK) | (1<<D1);
-	case 2: return (map & POSITION_MASK) | (1<<D2);
-	case 3: return (map & POSITION_MASK) | (1<<D3);
-	}
-	return POSITION_MASK;
-}
-
-
-int Led7::rollSpeed = 500;
 
 volatile short rollingStep = 0;
 volatile int rollingCount;
@@ -211,41 +98,41 @@ void cancelRoll() {
  */
 void Led7::shift(char c) {
 	cancelRoll();
-	for(short i = 0; i < LED7_NB_DIGITS - 1; i++) {
+	for(short i = 0; i < nbDigits - 1; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = toDisplay[i + 1];
-		toSend[i] = prepareForPos(toSend[i + 1], i);
+		updateDisplay(i, toDisplay[i]);
 	}
-	toDisplay[LED7_NB_DIGITS - 1] = getSegments(c);
-	toSend[LED7_NB_DIGITS - 1] = prepareForPos(prepareForSegment(toDisplay[LED7_NB_DIGITS - 1]), LED7_NB_DIGITS - 1);
+	toDisplay[nbDigits - 1] = getSegments(c);
+	updateDisplay(nbDigits - 1, toDisplay[nbDigits - 1]);
 }
 
 void Led7::display(unsigned int value) {
 	cancelRoll();
-	for (short i = LED7_NB_DIGITS - 1; i >= 0; i--) {
+	for (short i = nbDigits - 1; i >= 0; i--) {
 		toDisplayBefore[i] = toDisplay[i];
 		if (value == 0) {
-			toDisplay[i] = (i == LED7_NB_DIGITS - 1) ? getSegments('0') : 0;
+			toDisplay[i] = (i == nbDigits - 1) ? getSegments('0') : 0;
 		} else {
 			toDisplay[i] = getSegments('0' + (value % 10));
 			value /= 10;
 		}
-		toSend[i] = prepareForPos(prepareForSegment(toDisplay[i]), i);
+		updateDisplay(i, toDisplay[i]);
 	}
 }
 
 void Led7::display(const char *value) {
 	cancelRoll();
 	short i;
-	for (i = 0; value[i] != '\0' && i < LED7_NB_DIGITS; i++) {
+	for (i = 0; value[i] != '\0' && i < nbDigits; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = getSegments(value[i]);
-		toSend[i] = prepareForPos(prepareForSegment(toDisplay[i]), i);
+		updateDisplay(i, toDisplay[i]);
 	}
-	while (i < LED7_NB_DIGITS) {
+	while (i < nbDigits) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = 0;
-		toSend[i] = prepareForPos(ALL_OFF, i);
+		updateDisplay(i, 0);
 		i++;
 	}
 }
@@ -253,28 +140,28 @@ void Led7::display(const char *value) {
 void Led7::display(const char *value, int len) {
 	cancelRoll();
 	short i;
-	if (len > LED7_NB_DIGITS) {
-		len = LED7_NB_DIGITS;
+	if (len > nbDigits) {
+		len = nbDigits;
 	}
 	for (i = 0; i < len; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = getSegments(value[i]);
-		toSend[i] = prepareForPos(prepareForSegment(toDisplay[i]), i);
+		updateDisplay(i, toDisplay[i]);
 	}
-	while (i < LED7_NB_DIGITS) {
+	while (i < nbDigits) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = 0;
-		toSend[i] = prepareForPos(ALL_OFF, i);
+		updateDisplay(i, 0);
 		i++;
 	}
 }
 
 void Led7::display(String value) {
 	cancelRoll();
-	for (unsigned short i = 0; i < LED7_NB_DIGITS; i++) {
+	for (unsigned short i = 0; i < nbDigits; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = (i >= value.length()) ? 0 : getSegments(value[i]);
-		toSend[i] = prepareForPos(prepareForSegment(toDisplay[i]), i);
+		updateDisplay(i, toDisplay[i]);
 	}
 }
 
@@ -298,11 +185,8 @@ void Led7::roll(String value) {
 	launchRoll();
 }
 
-volatile short digit = 0;
-
-void doSend(word w) {
-	PORTB = (PORTB & 0xC0) | (w >> 8);
-	PORTD = (PORTD & 0x02) |  w;
+void updateDisplay(byte pos, byte segments) {
+	// TODO change to virtual
 }
 
 void Led7::send() {
@@ -311,23 +195,21 @@ void Led7::send() {
 		if (rollingCount == 0) {
 			rollingStep--;
 			rollingCount = Led7::rollSpeed;
-			for (short i = LED7_NB_DIGITS - 1; i >= 0; i--) {
+			for (short i = nbDigits - 1; i >= 0; i--) {
 				switch(rollingStep) {
 				case 3:
-					toSend[i] = prepareForPos(prepareForSegment(
-							(toDisplayBefore[i] & 0xfe) << 3 ), i);
+					updateDisplay(i, (toDisplayBefore[i] & 0xfe) << 3 );
 				break;
 				case 2:
-					toSend[i] = prepareForPos(prepareForSegment(
+					updateDisplay(i,
 							((toDisplayBefore[i] & 0xfe) << 6 )
-							| ((toDisplay[i] & 0x80) >> 6) ), i);
+							| ((toDisplay[i] & 0x80) >> 6) );
 				break;
 				case 1:
-					toSend[i] = prepareForPos(prepareForSegment(
-							(toDisplay[i] & 0xf0) >> 3 ), i);
+					updateDisplay(i, (toDisplay[i] & 0xf0) >> 3 );
 				break;
 				case 0:
-					toSend[i] = prepareForPos(prepareForSegment(toDisplay[i]), i);
+					updateDisplay(i, toDisplay[i]);
 				break;
 				}
 			}
@@ -335,10 +217,8 @@ void Led7::send() {
 			rollingCount--;
 		}
 	}
-	doSend(toSend[digit]);
-	digit = (digit + 1) % LED7_NB_DIGITS;
 }
 
 void Led7::log(byte value) {
-	doSend(prepareForPos(prepareForSegment(getSegments('0' + (value % 10))), value / 10));
+	updateDisplay(value / 10, getSegments('0' + (value % 10)));
 }
