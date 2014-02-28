@@ -51,10 +51,12 @@ void setPWM(byte pwm, unsigned int icr,
 		TCCR.registers.TCCRnA = TCCR1A;
 		TCCR.registers.TCCRnB = TCCR1B;
 		break;
+#ifdef TCCR2A
 	case 2:
 		TCCR.registers.TCCRnA = TCCR2A;
 		TCCR.registers.TCCRnB = TCCR2B;
 		break;
+#endif
 	default:
 		TCCR.registers.TCCRnA = TCCR0A;
 		TCCR.registers.TCCRnB = TCCR0B;
@@ -78,12 +80,14 @@ void setPWM(byte pwm, unsigned int icr,
 		OCR1A = ocr_a;
 		OCR1B = ocr_b;
 		break;
+#ifdef TCCR2A
 	case 2:
 		TCCR2A = TCCR.registers.TCCRnA;
 		TCCR2B = TCCR.registers.TCCRnB;
 		OCR2A = (byte)ocr_a;
 		OCR2B = (byte)ocr_b;
 		break;
+#endif
 	default:
 		TCCR0A = TCCR.registers.TCCRnA;
 		TCCR0B = TCCR.registers.TCCRnB;
@@ -106,10 +110,12 @@ void setPWMmode(
 		TCCR.registers.TCCRnA = TCCR1A;
 		TCCR.registers.TCCRnB = TCCR1B;
 		break;
+#ifdef TCCR2A
 	case 2:
 		TCCR.registers.TCCRnA = TCCR2A;
 		TCCR.registers.TCCRnB = TCCR2B;
 		break;
+#endif
 	default:
 		TCCR.registers.TCCRnA = TCCR0A;
 		TCCR.registers.TCCRnB = TCCR0B;
@@ -126,10 +132,12 @@ void setPWMmode(
 		TCCR1A = TCCR.registers.TCCRnA;
 		TCCR1B = TCCR.registers.TCCRnB;
 		break;
+#ifdef TCCR2A
 	case 2:
 		TCCR2A = TCCR.registers.TCCRnA;
 		TCCR2B = TCCR.registers.TCCRnB;
 		break;
+#endif
 	default:
 		TCCR0A = TCCR.registers.TCCRnA;
 		TCCR0B = TCCR.registers.TCCRnB;
