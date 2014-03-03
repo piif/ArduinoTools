@@ -5,20 +5,21 @@
 #include "avr/io.h"
 
 /**
+ * On Arduino UNO :
  * Timer 0 :
  * - used by delay & delayMicrosecond
- * - output on pins 6 et 5
+ * - output on pins 6 and 5
  * - 8 bits
  * - prescaler 1, 8, 64, 256, or 1024
  *
  * Timer 1 :
- * - output on pins 9 et 10
+ * - output on pins 9 and 10
  * - 16 bits
  * - same prescaler as timer 0
  * - Input Capture Unit (?)
  *
  * Timer 2 :
- * - output on pins 11 et 3
+ * - output on pins 11 and 3
  * - 8 bits
  * - prescaler 1, 8, 32, 64, 128, 256, 1024
  * - ability to use external clock (?)
@@ -79,7 +80,7 @@
 #define PWM2_PRESCALER_256  6
 #define PWM2_PRESCALER_1024 7
 
-// version "bas niveau"
+// "low level" version
 extern void setPWM(
 		byte pwm, unsigned int icr,
 		byte com_a, unsigned int ocr_a,
@@ -90,8 +91,8 @@ extern void setPWMmode(
 		byte pwm,
 		byte com_a, byte com_b);
 
-// Limité au mode Fast non-inverted, mais en utilisant ICR, et en
-// calculant ICR+CS pour une période donnée
+// Limited to Fast non-inverted mode, but with ICR, and with
+// computing of ICR+CS for a given period
 // TODO !
 extern void setPWMsimple(
 		byte pwm, unsigned long period,

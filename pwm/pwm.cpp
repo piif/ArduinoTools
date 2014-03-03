@@ -146,65 +146,8 @@ void setPWMmode(
 	SREG = oldSREG;
 }
 
-// Limité au mode Fast non-inverted, mais en utilisant ICR, et en
-// calculant ICR+CS pour une période donnée
 void setPWMsimple(
 		byte pwm, unsigned long period,
 		unsigned int dutyA, unsigned int dutyB) {
 	// todo ...
 }
-
-
-#ifdef OLD_VERSION
-
-// specific to PWM 1 -> outputs 9 and 10
-
-//	Serial.println("set bit " #set_reference ":" #set_position " from " #test_reference ":" #test_position);
-#define SET_PWM_BIT(set_position, set_reference, test_position, test_reference) \
-	if((test_reference) & (1<<(test_position))) { \
-		set_##set_reference |= 1 << (set_position); \
-	} else { \
-		clr_##set_reference &= (byte)(~(1 << (set_position))); \
-	}
-
-void setPWM1(byte com1a, unsigned int ocr1a,
-		byte com1b, unsigned int ocr1b,
-		byte wgm, byte cs) {
-	byte set_tccr1a = 0, clr_tccr1a = 0xff;
-	byte set_tccr1b = 0, clr_tccr1b = 0xff;
-
-	SET_PWM_BIT(COM1A0, tccr1a, 0, com1a)
-	SET_PWM_BIT(COM1A1, tccr1a, 1, com1a)
-
-	SET_PWM_BIT(COM1B0, tccr1a, 0, com1b)
-	SET_PWM_BIT(COM1B1, tccr1a, 1, com1b)
-
-	SET_PWM_BIT(WGM10, tccr1a, 0, wgm)
-	SET_PWM_BIT(WGM11, tccr1a, 1, wgm)
-	SET_PWM_BIT(WGM12, tccr1b, 2, wgm)
-	SET_PWM_BIT(WGM13, tccr1b, 3, wgm)
-
-	SET_PWM_BIT(CS10, tccr1b, 0, cs)
-	SET_PWM_BIT(CS11, tccr1b, 1, cs)
-	SET_PWM_BIT(CS12, tccr1b, 2, cs)
-
-	TCCR1A = (TCCR1A | set_tccr1a) & clr_tccr1a;
-	TCCR1B = (TCCR1B | set_tccr1b) & clr_tccr1b;
-
-	// set OCR1x AFTER TCCR1x or high byte is forced to 0 !?!?
-	OCR1A = ocr1a;
-	OCR1B = ocr1b;
-
-	Serial.print("TCCR1A : ");
-	Serial.println(TCCR1A, BIN);
-
-	Serial.print("TCCR1B : ");
-	Serial.println(TCCR1B, BIN);
-
-	Serial.print("OCR1A : ");
-	Serial.println(OCR1A);
-
-	Serial.print("OCR1B : ");
-	Serial.println(OCR1B);
-}
-#endif
