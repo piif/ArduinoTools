@@ -1,3 +1,7 @@
+/**
+ * minimal library to handle 7 segments display
+ * this class must be derived for device specific versions
+ */
 
 #ifndef LED_7_H
 #define LED_7_H 1
@@ -68,6 +72,7 @@ public:
 	volatile byte *toDisplayBefore;
 
 	byte getSegments(char c);
-	virtual void updateDisplay(byte pos, byte segments) = 0;
+	virtual void prepareDisplay(byte pos, byte segments) = 0;
+	virtual void updateDisplay() = 0;
 };
 #endif

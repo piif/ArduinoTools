@@ -14,6 +14,7 @@ public:
 	void send();
 
 protected:
-	void updateDisplay(byte pos, byte segments);
+	void prepareDisplay(byte pos, byte segments);
+	void updateDisplay();
 };
 #endif

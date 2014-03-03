@@ -101,10 +101,11 @@ void Led7::shift(char c) {
 	for(short i = 0; i < nbDigits - 1; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = toDisplay[i + 1];
-		updateDisplay(i, toDisplay[i]);
+		prepareDisplay(i, toDisplay[i]);
 	}
 	toDisplay[nbDigits - 1] = getSegments(c);
-	updateDisplay(nbDigits - 1, toDisplay[nbDigits - 1]);
+	prepareDisplay(nbDigits - 1, toDisplay[nbDigits - 1]);
+	updateDisplay();
 }
 
 void Led7::display(unsigned int value) {
@@ -117,8 +118,9 @@ void Led7::display(unsigned int value) {
 			toDisplay[i] = getSegments('0' + (value % 10));
 			value /= 10;
 		}
-		updateDisplay(i, toDisplay[i]);
+		prepareDisplay(i, toDisplay[i]);
 	}
+	updateDisplay();
 }
 
 void Led7::display(const char *value) {
@@ -127,14 +129,15 @@ void Led7::display(const char *value) {
 	for (i = 0; value[i] != '\0' && i < nbDigits; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = getSegments(value[i]);
-		updateDisplay(i, toDisplay[i]);
+		prepareDisplay(i, toDisplay[i]);
 	}
 	while (i < nbDigits) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = 0;
-		updateDisplay(i, 0);
+		prepareDisplay(i, 0);
 		i++;
 	}
+	updateDisplay();
 }
 
 void Led7::display(const char *value, int len) {
@@ -146,14 +149,15 @@ void Led7::display(const char *value, int len) {
 	for (i = 0; i < len; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = getSegments(value[i]);
-		updateDisplay(i, toDisplay[i]);
+		prepareDisplay(i, toDisplay[i]);
 	}
 	while (i < nbDigits) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = 0;
-		updateDisplay(i, 0);
+		prepareDisplay(i, 0);
 		i++;
 	}
+	updateDisplay();
 }
 
 void Led7::display(String value) {
@@ -161,8 +165,9 @@ void Led7::display(String value) {
 	for (unsigned short i = 0; i < nbDigits; i++) {
 		toDisplayBefore[i] = toDisplay[i];
 		toDisplay[i] = (i >= value.length()) ? 0 : getSegments(value[i]);
-		updateDisplay(i, toDisplay[i]);
+		prepareDisplay(i, toDisplay[i]);
 	}
+	updateDisplay();
 }
 
 void Led7::roll(unsigned int value) {
@@ -185,10 +190,6 @@ void Led7::roll(String value) {
 	launchRoll();
 }
 
-void updateDisplay(byte pos, byte segments) {
-	// TODO change to virtual
-}
-
 void Led7::send() {
 	// look if toSend must be modified by a running roll effect
 	if (rollingStep > 0) {
@@ -198,21 +199,22 @@ void Led7::send() {
 			for (short i = nbDigits - 1; i >= 0; i--) {
 				switch(rollingStep) {
 				case 3:
-					updateDisplay(i, (toDisplayBefore[i] & 0xfe) << 3 );
+					prepareDisplay(i, (toDisplayBefore[i] & 0xfe) << 3 );
 				break;
 				case 2:
-					updateDisplay(i,
+					prepareDisplay(i,
 							((toDisplayBefore[i] & 0xfe) << 6 )
 							| ((toDisplay[i] & 0x80) >> 6) );
 				break;
 				case 1:
-					updateDisplay(i, (toDisplay[i] & 0xf0) >> 3 );
+					prepareDisplay(i, (toDisplay[i] & 0xf0) >> 3 );
 				break;
 				case 0:
-					updateDisplay(i, toDisplay[i]);
+					prepareDisplay(i, toDisplay[i]);
 				break;
 				}
 			}
+			updateDisplay();
 		} else {
 			rollingCount--;
 		}
@@ -220,5 +222,6 @@ void Led7::send() {
 }
 
 void Led7::log(byte value) {
-	updateDisplay(value / 10, getSegments('0' + (value % 10)));
+	prepareDisplay(value / 10, getSegments('0' + (value % 10)));
+	updateDisplay();
 }

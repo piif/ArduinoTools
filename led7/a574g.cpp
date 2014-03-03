@@ -124,10 +124,12 @@ word prepareForPos(word map, byte pos) {
 	return POSITION_MASK;
 }
 
-void A574g::updateDisplay(byte pos, byte segments) {
+void A574g::prepareDisplay(byte pos, byte segments) {
 	toSend[pos] = prepareForPos((segments == 0) ? ALL_OFF : prepareForSegment(segments), pos);
 }
-
+void A574g::updateDisplay() {
+	// nothing. job will be done by send()
+}
 volatile short digit = 0;
 
 void doSend(word w) {
