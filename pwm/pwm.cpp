@@ -1,5 +1,8 @@
 #include "pwm.h"
 
+#include <Arduino.h>
+#include <avr/io.h>
+
 /**
  * TCCR0A : COM0A1 COM0A0 COM0B1 COM0B0 – – WGM01 WGM00
  * TCCR0B : FOC0A FOC0B – – WGM02 CS02 CS01 CS00

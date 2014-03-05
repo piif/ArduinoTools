@@ -1,9 +1,6 @@
 #ifndef PWM_PWM_H
 #define PWM_PWM_H 1
 
-#include "Arduino.h"
-#include "avr/io.h"
-
 /**
  * On Arduino UNO :
  * Timer 0 :
