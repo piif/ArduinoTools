@@ -1,6 +1,8 @@
 #ifndef PWM_PWM_H
 #define PWM_PWM_H 1
 
+#include <Arduino.h>
+
 /**
  * On Arduino UNO :
  * Timer 0 :
@@ -49,12 +51,37 @@
 #define WGM_2_PHASE_OCRA 5
 
 // Arduino output associated with PWM outs
+#if defined __AVR_ATmega2560__
+
+/** MEGA */
+#define PWM_0_A 13
+#define PWM_0_B 4
+#define PWM_1_A 11
+#define PWM_1_B 12
+#define PWM_1_C 13
+#define PWM_2_A 10
+#define PWM_2_B 9
+#define PWM_3_A 5
+#define PWM_3_B 2
+#define PWM_3_C 3
+#define PWM_4_A 6
+#define PWM_4_B 7
+#define PWM_4_C 8
+#define PWM_5_A 46
+#define PWM_5_B 45
+#define PWM_5_C 44
+
+#else
+
+/** UNO */
 #define PWM_0_A 6
 #define PWM_0_B 5
 #define PWM_1_A 9
 #define PWM_1_B 10
 #define PWM_2_A 11
 #define PWM_2_B 3
+
+#endif
 
 // clock prescalers
 #define PWM0_PRESCALER_1    1
