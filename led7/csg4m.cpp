@@ -46,7 +46,7 @@ byte prepareForSegment(byte s) {
 }
 
 void CSG4M::setPower(byte power) {
-	byte data[2] = { 0x00, ((power & 0x7) << 4) | 0x7 };
+	byte data[2] = { 0x00, (byte)(((power & 0x7) << 4) | 0x7) };
 	Wire.beginTransmission(address);
     Wire.write(data, 2);
     Wire.endTransmission();
