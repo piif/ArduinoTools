@@ -1,7 +1,7 @@
 #include "pwm.h"
 
 #include <avr/io.h>
-#include "../avrtools.h"
+#include <ArduinoTools.h>
 
 /**
  * TCCR0A : COM0A1 COM0A0 COM0B1 COM0B0 – – WGM01 WGM00
