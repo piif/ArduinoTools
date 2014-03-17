@@ -18,33 +18,28 @@ extern int innerloops;
 #define DEFAULT_DELAY_TIMER 1
 
 /**
- * default sleep mode to use
- */
-#define DEFAULT_SLEEP_MODE SLEEP_MODE_IDLE
-
-/**
  * This methods returns after "microseconds" µs, but may be cancelled by
  * delayCancel() calls.
  * Returns true if delay was achieved, false if it was interrupted
  */
-bool delayIdle(long microseconds);
+bool delayIdle(unsigned long microseconds);
 
 /**
  * Same method as delayIdle(), but specify a sleep mode to use
  * Be careful to choose a mode which doesn't disable the timer !
  */
-bool delayIdle(long microseconds, word sleep_mode);
+bool delayIdle(unsigned long microseconds, word sleep_mode);
 
 /**
  * Same method as delayIdle(), but specify a timer to use
  */
-bool delayIdleWith(long microseconds, byte timer);
+bool delayIdleWith(unsigned long microseconds, byte timer);
 
 /**
  * Same method as delayIdleWith(), but specify a sleep mode to use
  * Be careful to choose a mode which doesn't disable the timer !
  */
-bool delayIdleWith(long microseconds, byte timer, word sleep_mode);
+bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode);
 
 /**
  * An interrupt handler may call this method to cancel a running delayIdle()

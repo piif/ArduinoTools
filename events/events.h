@@ -13,38 +13,83 @@
 #include <ArduinoTools.h>
 
 class Events {
-	typedef enum { free=0, timeout=1, interval=2 } eventType;
+public:
+	typedef enum {
+		event_free = 0,
+		event_timer = 1,
+		event_input = 2
+	} eventType;
 	// TODO : pin input interrupt, serial
 	// > 10 for user defined
 
-	typedef void (*eventCallback)(void *data);
+	typedef void (*eventCallback)(byte detail, void *data);
 
-	typedef struct _eventHandler {
-		Events::eventType type;
-		int id; // = rank in handler map
-		eventCallback callback;
-		void *data;
-		// specific to events => replace by a union if other types need other fields
-		long delay; // number of ms for timeout / interval events
-		long next;  // date of next tick for timeout / interval events
-	} eventHandler;
+	typedef struct _eventHandler eventHandler;
 
 	void begin();
 
+	/**
+	 * Register a user event handler, with given type (shoud be >= 10)
+	 * Returns a pointer to an eventHandler structure
+	 */
 	eventHandler *registerEvent(eventType type, eventCallback callback, void *data);
+
+	/**
+	 * Fire a timer event after ms milliseconds, which will be handled
+	 * by callback, with data as second argument
+	 * Callback first argument is unused
+	 * Returns a pointer to an eventHandler structure
+	 */
 	eventHandler *registerTimeout(long ms, eventCallback callback, void *data);
+
+	/**
+	 * Fire a timer event every ms milliseconds, which will be handled
+	 * by callback, with data as second argument
+	 * Callback first argument is unused
+	 * Returns a pointer to an eventHandler structure
+	 */
 	eventHandler *registerInterval(long ms, eventCallback callback, void *data);
+
+	/**
+	 * Fire a timer event, count times, every ms milliseconds.
+	 * Event will be handled by callback, with data as second argument
+	 * Callback first argument is unused
+	 * Returns a pointer to an eventHandler structure
+	 */
+	eventHandler *registerInterval(long ms, int count, eventCallback callback, void *data);
+
+	/**
+	 * Fire a "input" event each time hardware event "mode" occurs on pin "input"
+	 * Event will be handled by callback, with data as second argument
+	 * Callback first argument is input number
+	 * Returns a pointer to an eventHandler structure
+	 */
+	eventHandler *registerInput(byte input, byte mode, eventCallback callback, void *data);
+
+	/**
+	 * unregisters given handler
+	 */
 	bool unregisterEvent(eventHandler *handler);
 
+	/**
+	 * fire a new event with given type and detail
+	 */
+	void fire(eventType type, short detail);
 	void fire(eventType type);
 
-	// to call repeatedly
+	/**
+	 * to call repeatedly, to handle queued events
+	 */
 	void waitNext();
 
 private:
-	// eventHandler[]
-	// eventQueue[]
+	byte eventHandlerMax;
+	eventHandler *handlers;
+	volatile byte queueSize;
+	byte *eventQueueTypes;
+	short *eventQueueDetails;
 
+	int findNewHandler();
 };
 
 #endif

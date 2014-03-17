@@ -2,8 +2,8 @@
 
 extern InterruptHandler interruptHandler[];
 
-#define _set_ISR(vect, n) ISR(vect) { \
-	if (interruptHandler[n]) (interruptHandler[n])(); \
+#define _set_ISR(vect, n, data) ISR(vect) { \
+	if (interruptHandler[n]) (interruptHandler[n])(data); \
 }
 
 #ifdef USE_INTERRUPT_INPUT_HANDLER
@@ -28,25 +28,25 @@ extern InterruptHandler interruptHandler[];
 		#define _INTERRUPTS_INPUT_TOTAL 2
 	#endif
 
-	_set_ISR(INT0_vect, _INTERRUPTS_FIRST_INPUT+0)
-	_set_ISR(INT1_vect, _INTERRUPTS_FIRST_INPUT+1)
+	_set_ISR(INT0_vect, _INTERRUPTS_FIRST_INPUT+0, 0)
+	_set_ISR(INT1_vect, _INTERRUPTS_FIRST_INPUT+1, 1)
 	#ifdef INT2_vect
-		_set_ISR(INT2_vect, _INTERRUPTS_FIRST_INPUT+2)
+		_set_ISR(INT2_vect, _INTERRUPTS_FIRST_INPUT+2, 2)
 	#endif
 	#ifdef INT3_vect
-		_set_ISR(INT3_vect, _INTERRUPTS_FIRST_INPUT+3)
+		_set_ISR(INT3_vect, _INTERRUPTS_FIRST_INPUT+3, 3)
 	#endif
 	#ifdef INT4_vect
-		_set_ISR(INT4_vect, _INTERRUPTS_FIRST_INPUT+4)
+		_set_ISR(INT4_vect, _INTERRUPTS_FIRST_INPUT+4, 4)
 	#endif
 	#ifdef INT5_vect
-		_set_ISR(INT5_vect, _INTERRUPTS_FIRST_INPUT+5)
+		_set_ISR(INT5_vect, _INTERRUPTS_FIRST_INPUT+5, 5)
 	#endif
 	#ifdef INT6_vect
-		_set_ISR(INT6_vect, _INTERRUPTS_FIRST_INPUT+6)
+		_set_ISR(INT6_vect, _INTERRUPTS_FIRST_INPUT+6, 6)
 	#endif
 	#ifdef INT7_vect
-		_set_ISR(INT7_vect, _INTERRUPTS_FIRST_INPUT+7)
+		_set_ISR(INT7_vect, _INTERRUPTS_FIRST_INPUT+7, 7)
 	#endif
 
 	const short _interrupts_first_input = _INTERRUPTS_FIRST_INPUT;
@@ -69,17 +69,17 @@ extern InterruptHandler interruptHandler[];
 		#define _INTERRUPTS_TIMER_TOTAL 3
 	#endif
 
-	_set_ISR(TIMER0_OVF_vect, _INTERRUPTS_FIRST_TIMER+0)
-	_set_ISR(TIMER1_OVF_vect, _INTERRUPTS_FIRST_TIMER+1)
-	_set_ISR(TIMER2_OVF_vect, _INTERRUPTS_FIRST_TIMER+2)
+	_set_ISR(TIMER0_OVF_vect, _INTERRUPTS_FIRST_TIMER+0, 0)
+	_set_ISR(TIMER1_OVF_vect, _INTERRUPTS_FIRST_TIMER+1, 1)
+	_set_ISR(TIMER2_OVF_vect, _INTERRUPTS_FIRST_TIMER+2, 2)
 	#ifdef TIMER3_OVF_vect
-		_set_ISR(TIMER3_OVF_vect, _INTERRUPTS_FIRST_TIMER+3)
+		_set_ISR(TIMER3_OVF_vect, _INTERRUPTS_FIRST_TIMER+3, 3)
 	#endif
 	#ifdef TIMER4_OVF_vect
-		_set_ISR(TIMER4_OVF_vect, _INTERRUPTS_FIRST_TIMER+4)
+		_set_ISR(TIMER4_OVF_vect, _INTERRUPTS_FIRST_TIMER+4, 4)
 	#endif
 	#ifdef TIMER5_OVF_vect
-		_set_ISR(TIMER5_OVF_vect, _INTERRUPTS_FIRST_TIMER+5)
+		_set_ISR(TIMER5_OVF_vect, _INTERRUPTS_FIRST_TIMER+5, 5)
 	#endif
 
 	const short _interrupts_first_timer = _INTERRUPTS_FIRST_TIMER;
@@ -121,4 +121,5 @@ extern InterruptHandler interruptHandler[];
 
 // now, we know how many handlers we must store
 InterruptHandler interruptHandler[_INTERRUPTS_TOTAL] = { 0, };
+int interruptData[_INTERRUPTS_TOTAL];
 
