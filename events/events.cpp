@@ -1,8 +1,13 @@
+#define NOT_IN_MAIN
+#define USE_INTERRUPT_INPUT_HANDLER
 #include "events.h"
 #include "delayIdle.h"
 
 #define MAX_QUEUE_SIZE 5
 #define HANDLER_ALLOC_BLOCK_SIZE 5
+
+// timer used for events "wait" loops
+#define EVENTS_TIMER 2
 
 struct _eventHandler {
 	Events::eventType type;
@@ -35,12 +40,13 @@ void Events::fire(Events::eventType type) {
 	fire(type, -1);
 }
 void Events::fire(Events::eventType type, short detail) {
-	if (queueSize >= MAX_QUEUE_SIZE) {
+	byte qs = queueSize;
+	if (qs >= MAX_QUEUE_SIZE) {
 		// full => ignore
 		return;
 	}
-	eventQueueTypes[queueSize] = type;
-	eventQueueDetails[queueSize] = detail;
+	eventQueueTypes[qs] = type;
+	eventQueueDetails[qs] = detail;
 	queueSize++;
 }
 
@@ -51,8 +57,6 @@ void Events::waitNext() {
 void Events::waitNext(word sleepMode) {
 	// for each fired events, call callback
 	for(int q = 0; q < queueSize; q++) {
-//Serial.println("q");
-//Serial.flush();
 		for(int h = 0; h < eventHandlerMax; h++) {
 			if (eventQueueTypes[q] == handlers[h].type) {
 				// this handler may be for this event
@@ -69,18 +73,20 @@ void Events::waitNext(word sleepMode) {
 			}
 		}
 	}
+	queueSize = 0;
 
 	// TODO µs or ms ????
 
 	// look at expired timer events + compute next time
-	unsigned long next = micros() + 100000L; // by default, wait 0.1s
+	unsigned long now = (millis() * 1000) + (micros() % 1000);
+	unsigned long next = now + 100000L; // by default, wait 0.1s
 
 	for(int h = 0; h < eventHandlerMax; h++) {
 		eventHandler *hdl = &(handlers[h]);
 
 		if (hdl->type == event_timer) {
 			// is it expired ? => handle
-			if (hdl->timerSpec.next <= micros()) {
+			if (hdl->timerSpec.next <= now) {
 				hdl->callback(-1, hdl->data);
 				if (hdl->timerSpec.count == 1) {
 					unregisterEvent(hdl);
@@ -90,7 +96,7 @@ void Events::waitNext(word sleepMode) {
 					}
 					do {
 						hdl->timerSpec.next += hdl->timerSpec.delay * 1000;
-					} while(hdl->timerSpec.next < micros());
+					} while(hdl->timerSpec.next < now);
 				}
 			}
 
@@ -99,10 +105,8 @@ void Events::waitNext(word sleepMode) {
 			}
 		}
 	}
-Serial.println(next - micros());
-Serial.flush();
 	// wait in a interruptible manner
-	delayIdleWith(next - micros(), 2, sleepMode);
+	delayIdleWith(next - now, EVENTS_TIMER, sleepMode);
 }
 
 Events::eventHandler *Events::registerEvent(Events::eventType type, Events::eventCallback callback, void *data) {
@@ -131,12 +135,16 @@ Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Even
 	}
 
 	result->timerSpec.delay = ms;
-	result->timerSpec.next = micros() + ms * 1000;
+	result->timerSpec.next = (millis() + ms) * 1000 + micros();
 	result->timerSpec.count = count;
 
 	// TODO : update global delay if empty or if "next" is before
 
 	return result;
+}
+
+void inputHandler(int interrupt) {
+	Scheduler.fire(Events::event_input, interrupt);
 }
 
 Events::eventHandler *Events::registerInput(byte input, byte mode, Events::eventCallback callback, void *data) {
@@ -161,6 +169,7 @@ Events::eventHandler *Events::registerInput(byte input, byte mode, Events::event
 		}
 	}
 	if (!foundOther) {
+		setInputHandler(result->inputSpec.interrupt, inputHandler);
 		enableInputInterrupt(result->inputSpec.interrupt, mode);
 	}
 
@@ -179,6 +188,7 @@ bool Events::unregisterEvent(Events::eventHandler *handler) {
 		}
 		if (!foundOther) {
 			disableInputInterrupt(handler->inputSpec.interrupt);
+			setInputHandler(handler->inputSpec.interrupt, 0);
 		}
 	}
 

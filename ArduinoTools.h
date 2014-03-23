@@ -112,25 +112,56 @@ bool disableTwiInterrupt(byte twi);
  * Replace existing one if any
  * Returns old handler (0 is no handler)
  */
-#ifdef USE_INTERRUPT_INPUT_HANDLER
+#if defined(USE_INTERRUPT_INPUT_HANDLER) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_0) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_1) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_2) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_3) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_4) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_5) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_6) || \
+	defined(USE_INTERRUPT_INPUT_HANDLER_7)
+
+	#define USE_INTERRUPT_INPUT_HANDLER
+
 	extern const short _interrupts_first_input;
 	#define setInputHandler(inputNumber, handler) \
 		setInterruptHandler(_interrupts_first_input + inputNumber, handler, inputNumber)
 #endif
 
-#ifdef USE_INTERRUPT_TIMER_HANDLER
+#if defined(USE_INTERRUPT_TIMER_HANDLER) || \
+	defined(USE_INTERRUPT_TIMER_HANDLER_0) || \
+	defined(USE_INTERRUPT_TIMER_HANDLER_1) || \
+	defined(USE_INTERRUPT_TIMER_HANDLER_2) || \
+	defined(USE_INTERRUPT_TIMER_HANDLER_3) || \
+	defined(USE_INTERRUPT_TIMER_HANDLER_4) || \
+	defined(USE_INTERRUPT_TIMER_HANDLER_5)
+
+	#define USE_INTERRUPT_TIMER_HANDLER
+
 	extern const short _interrupts_first_timer;
 	#define setTimerHandler(timerNumber, handler) \
 		setInterruptHandler(_interrupts_first_timer + timerNumber, handler, timerNumber)
 #endif
 
-#ifdef USE_INTERRUPT_SERIAL_HANDLER
+#if defined(USE_INTERRUPT_SERIAL_HANDLER) || \
+	defined(USE_INTERRUPT_SERIAL_HANDLER_0) || \
+	defined(USE_INTERRUPT_SERIAL_HANDLER_1) || \
+	defined(USE_INTERRUPT_SERIAL_HANDLER_2)
+
+	#define USE_INTERRUPT_SERIAL_HANDLER
+
 	extern const short _interrupts_first_serial;
 	#define setSerialHandler(serialNumber, handler) \
 		setInterruptHandler(_interrupts_first_serial + serialNumber, handler, serialNumber)
 #endif
 
-#ifdef USE_INTERRUPT_TWI_HANDLER
+#if defined(USE_INTERRUPT_TWI_HANDLER) || \
+	defined(USE_INTERRUPT_TWI_HANDLER_0) || \
+	defined(USE_INTERRUPT_TWI_HANDLER_1)
+
+	#define USE_INTERRUPT_TWI_HANDLER
+
 	extern const short _interrupts_first_twi;
 	#define setTwiHandler(twiNumber, handler) \
 		setInterruptHandler(_interrupts_first_twi + twiNumber, handler, twiNumber)
@@ -139,10 +170,11 @@ bool disableTwiInterrupt(byte twi);
 // underlying function
 InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler handler, int data);
 
-#if defined(USE_INTERRUPT_INPUT_HANDLER) \
+#if !defined(NOT_IN_MAIN) && ( \
+	defined(USE_INTERRUPT_INPUT_HANDLER) \
 	|| defined(USE_INTERRUPT_TIMER_HANDLER) \
 	|| defined(USE_INTERRUPT_SERIAL_HANDLER) \
-	|| defined(USE_INTERRUPT_TWI_HANDLER)
+	|| defined(USE_INTERRUPT_TWI_HANDLER) )
 	#include <ArduinoToolsInternals.h>
 #endif
 

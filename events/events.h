@@ -2,15 +2,15 @@
 #define EVENTS_EVENTS_H 1
 #include <Arduino.h>
 
-
 // CALLER MUST DECIDE WHICH KIND OF EVENTS HE WANTS, BY #DEFINING
 // ONE OR SEVERAL OF
 // - USE_INTERRUPT_INPUT_HANDLER
 // - USE_INTERRUPT_SERIAL_HANDLER
 // - USE_INTERRUPT_TWI_HANDLER
 // BEFORE THIS #INCLUSION
-// TIMER must be on
-#define USE_INTERRUPT_TIMER_HANDLER
+
+// TIMER must be on for EVENTS_TIMER
+#define USE_INTERRUPT_TIMER_HANDLER_2
 #include <ArduinoTools.h>
 
 class Events {
@@ -62,6 +62,7 @@ public:
 	/**
 	 * Fire a "input" event each time hardware event "mode" occurs on pin "input"
 	 * Event will be handled by callback, with data as second argument
+	 * mode may be LOW, HIGH CHANGE or RAISING
 	 * Callback first argument is input number
 	 * Returns a pointer to an eventHandler structure
 	 */
@@ -92,6 +93,8 @@ private:
 	short *eventQueueDetails;
 
 	int findNewHandler();
+
+//	void inputHandler(int interrupt);
 };
 
 extern Events Scheduler;

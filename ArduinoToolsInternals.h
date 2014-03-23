@@ -6,7 +6,7 @@ extern InterruptHandler interruptHandler[];
 	if (interruptHandler[n]) (interruptHandler[n])(data); \
 }
 
-#ifdef USE_INTERRUPT_INPUT_HANDLER
+#if defined(USE_INTERRUPT_INPUT_HANDLER)
 
 	// enumerate input interrupts
 	#define _INTERRUPTS_FIRST_INPUT 0
@@ -28,24 +28,28 @@ extern InterruptHandler interruptHandler[];
 		#define _INTERRUPTS_INPUT_TOTAL 2
 	#endif
 
-	_set_ISR(INT0_vect, _INTERRUPTS_FIRST_INPUT+0, 0)
-	_set_ISR(INT1_vect, _INTERRUPTS_FIRST_INPUT+1, 1)
-	#ifdef INT2_vect
+	#if defined(USE_INTERRUPT_INPUT_HANDLER_0)
+		_set_ISR(INT0_vect, _INTERRUPTS_FIRST_INPUT+0, 0)
+	#endif
+	#if defined(USE_INTERRUPT_INPUT_HANDLER_1)
+		_set_ISR(INT1_vect, _INTERRUPTS_FIRST_INPUT+1, 1)
+	#endif
+	#if defined(INT2_vect) && defined(USE_INTERRUPT_INPUT_HANDLER_2)
 		_set_ISR(INT2_vect, _INTERRUPTS_FIRST_INPUT+2, 2)
 	#endif
-	#ifdef INT3_vect
+	#if defined(INT3_vect) && defined(USE_INTERRUPT_INPUT_HANDLER_3)
 		_set_ISR(INT3_vect, _INTERRUPTS_FIRST_INPUT+3, 3)
 	#endif
-	#ifdef INT4_vect
+	#if defined(INT4_vect) && defined(USE_INTERRUPT_INPUT_HANDLER_4)
 		_set_ISR(INT4_vect, _INTERRUPTS_FIRST_INPUT+4, 4)
 	#endif
-	#ifdef INT5_vect
+	#if defined(INT5_vect) && defined(USE_INTERRUPT_INPUT_HANDLER_5)
 		_set_ISR(INT5_vect, _INTERRUPTS_FIRST_INPUT+5, 5)
 	#endif
-	#ifdef INT6_vect
+	#if defined(INT6_vect) && defined(USE_INTERRUPT_INPUT_HANDLER_6)
 		_set_ISR(INT6_vect, _INTERRUPTS_FIRST_INPUT+6, 6)
 	#endif
-	#ifdef INT7_vect
+	#if defined(INT7_vect) && defined(USE_INTERRUPT_INPUT_HANDLER_7)
 		_set_ISR(INT7_vect, _INTERRUPTS_FIRST_INPUT+7, 7)
 	#endif
 
@@ -56,7 +60,7 @@ extern InterruptHandler interruptHandler[];
 	#define __DELTA_1 0
 #endif
 
-#ifdef USE_INTERRUPT_TIMER_HANDLER
+#if defined(USE_INTERRUPT_TIMER_HANDLER)
 	#define _INTERRUPTS_FIRST_TIMER __DELTA_1
 
 	#if defined(TIMER5_OVF_vect)
@@ -69,16 +73,22 @@ extern InterruptHandler interruptHandler[];
 		#define _INTERRUPTS_TIMER_TOTAL 3
 	#endif
 
-	_set_ISR(TIMER0_OVF_vect, _INTERRUPTS_FIRST_TIMER+0, 0)
-	_set_ISR(TIMER1_OVF_vect, _INTERRUPTS_FIRST_TIMER+1, 1)
-	_set_ISR(TIMER2_OVF_vect, _INTERRUPTS_FIRST_TIMER+2, 2)
-	#ifdef TIMER3_OVF_vect
+	#if defined(USE_INTERRUPT_TIMER_HANDLER_0)
+		_set_ISR(TIMER0_OVF_vect, _INTERRUPTS_FIRST_TIMER+0, 0)
+	#endif
+	#if defined(USE_INTERRUPT_TIMER_HANDLER_1)
+		_set_ISR(TIMER1_OVF_vect, _INTERRUPTS_FIRST_TIMER+1, 1)
+	#endif
+	#if defined(USE_INTERRUPT_TIMER_HANDLER_2)
+		_set_ISR(TIMER2_OVF_vect, _INTERRUPTS_FIRST_TIMER+2, 2)
+	#endif
+	#if defined(TIMER3_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_2)
 		_set_ISR(TIMER3_OVF_vect, _INTERRUPTS_FIRST_TIMER+3, 3)
 	#endif
-	#ifdef TIMER4_OVF_vect
+	#if defined(TIMER4_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_4)
 		_set_ISR(TIMER4_OVF_vect, _INTERRUPTS_FIRST_TIMER+4, 4)
 	#endif
-	#ifdef TIMER5_OVF_vect
+	#if defined(TIMER5_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_5)
 		_set_ISR(TIMER5_OVF_vect, _INTERRUPTS_FIRST_TIMER+5, 5)
 	#endif
 
@@ -91,7 +101,8 @@ extern InterruptHandler interruptHandler[];
 
 
 
-#ifdef USE_INTERRUPT_SERIAL_HANDLER
+#if defined(USE_INTERRUPT_SERIAL_HANDLER)
+
 	#define _INTERRUPTS_FIRST_SERIAL __DELTA_2
 	#error NOT YET IMPLEMENTED
 	#define _INTERRUPTS_SERIAL_TOTAL 0
@@ -105,7 +116,8 @@ extern InterruptHandler interruptHandler[];
 
 
 
-#ifdef USE_INTERRUPT_TWI_HANDLER
+#if defined(USE_INTERRUPT_TWI_HANDLER)
+
 	#define _INTERRUPTS_FIRST_TWI __DELTA_3
 	#error NOT YET IMPLEMENTED
 	#define _INTERRUPTS_TWI_TOTAL 0

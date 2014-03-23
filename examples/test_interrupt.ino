@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#define USE_INTERRUPT_INPUT_HANDLER
+#define USE_INTERRUPT_INPUT_HANDLER_0
 #include <ArduinoTools.h>
 
 bool b0, b1, b2, b3;

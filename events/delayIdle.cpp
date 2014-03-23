@@ -1,4 +1,4 @@
-
+#define NOT_IN_MAIN
 #include "delayIdle.h"
 
 #include <pwm/pwm.h>
