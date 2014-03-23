@@ -1,4 +1,3 @@
-#define NOT_IN_MAIN
 #include "events.h"
 #include "delayIdle.h"
 
@@ -12,9 +11,9 @@ struct _eventHandler {
 	void *data;
 	union {
 		struct {
-			long delay; // number of ms for timeout / interval events
+			unsigned long delay; // number of ms for timeout / interval events
 			unsigned long next;  // date of next tick for timeout / interval events
-			int count;  // date of next tick for timeout / interval events
+			unsigned int count;  // date of next tick for timeout / interval events
 		} timerSpec;
 		struct {
 			byte pin;
@@ -46,29 +45,20 @@ void Events::fire(Events::eventType type, short detail) {
 }
 
 void Events::waitNext() {
-	// foreach fired events, call callbacks
+	waitNext(DEFAULT_SLEEP_MODE);
+}
+
+void Events::waitNext(word sleepMode) {
+	// for each fired events, call callback
 	for(int q = 0; q < queueSize; q++) {
+//Serial.println("q");
+//Serial.flush();
 		for(int h = 0; h < eventHandlerMax; h++) {
 			if (eventQueueTypes[q] == handlers[h].type) {
 				// this handler may be for this event
 				eventHandler *hdl = &(handlers[h]);
 
-				if (hdl->type == event_timer) {
-					// is it expired ? => handle
-					if (hdl->timerSpec.next <= micros()) {
-						hdl->callback(-1, hdl->data);
-						if (hdl->timerSpec.count == 1) {
-							unregisterEvent(hdl);
-						} else {
-							if (hdl->timerSpec.count > 0) {
-								hdl->timerSpec.count--;
-							}
-							do {
-								hdl->timerSpec.next += hdl->timerSpec.delay;
-							} while(hdl->timerSpec.next < micros());
-						}
-					}
-				} else if (hdl->type == event_input) {
+				if (hdl->type == event_input) {
 					// is it for this interrupt ?
 					if (hdl->inputSpec.interrupt == eventQueueDetails[q]) {
 						hdl->callback(eventQueueDetails[q], hdl->data);
@@ -80,19 +70,39 @@ void Events::waitNext() {
 		}
 	}
 
-	// compute next time
-	unsigned long next = 100000L; // by default, wait 0.1s
+	// TODO µs or ms ????
+
+	// look at expired timer events + compute next time
+	unsigned long next = micros() + 100000L; // by default, wait 0.1s
+
 	for(int h = 0; h < eventHandlerMax; h++) {
 		eventHandler *hdl = &(handlers[h]);
+
 		if (hdl->type == event_timer) {
+			// is it expired ? => handle
+			if (hdl->timerSpec.next <= micros()) {
+				hdl->callback(-1, hdl->data);
+				if (hdl->timerSpec.count == 1) {
+					unregisterEvent(hdl);
+				} else {
+					if (hdl->timerSpec.count > 0) {
+						hdl->timerSpec.count--;
+					}
+					do {
+						hdl->timerSpec.next += hdl->timerSpec.delay * 1000;
+					} while(hdl->timerSpec.next < micros());
+				}
+			}
+
 			if (next > hdl->timerSpec.next) {
 				next = hdl->timerSpec.next;
 			}
 		}
 	}
-
+Serial.println(next - micros());
+Serial.flush();
 	// wait in a interruptible manner
-	delayIdle(next - micros());
+	delayIdleWith(next - micros(), 2, sleepMode);
 }
 
 Events::eventHandler *Events::registerEvent(Events::eventType type, Events::eventCallback callback, void *data) {
@@ -108,13 +118,13 @@ Events::eventHandler *Events::registerEvent(Events::eventType type, Events::even
 	return result;
 }
 
-Events::eventHandler *Events::registerTimeout(long ms, Events::eventCallback callback, void *data) {
+Events::eventHandler *Events::registerTimeout(unsigned long ms, Events::eventCallback callback, void *data) {
 	return registerInterval(ms, 1, callback, data);
 }
-Events::eventHandler *Events::registerInterval(long ms, Events::eventCallback callback, void *data) {
+Events::eventHandler *Events::registerInterval(unsigned long ms, Events::eventCallback callback, void *data) {
 	return registerInterval(ms, -1, callback, data);
 }
-Events::eventHandler *Events::registerInterval(long ms, int count, Events::eventCallback callback, void *data) {
+Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Events::eventCallback callback, void *data) {
 	Events::eventHandler *result = registerEvent(event_timer, callback, data);
 	if (result == 0) {
 		return 0;
@@ -197,3 +207,5 @@ int Events::findNewHandler() {
 	// and return first of them.
 	return eventHandlerMax - HANDLER_ALLOC_BLOCK_SIZE;
 }
+
+Events Scheduler;

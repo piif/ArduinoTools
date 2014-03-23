@@ -1,15 +1,16 @@
 #ifndef EVENTS_EVENTS_H
 #define EVENTS_EVENTS_H 1
+#include <Arduino.h>
+
 
 // CALLER MUST DECIDE WHICH KIND OF EVENTS HE WANTS, BY #DEFINING
 // ONE OR SEVERAL OF
 // - USE_INTERRUPT_INPUT_HANDLER
-// - USE_INTERRUPT_TIMER_HANDLER
 // - USE_INTERRUPT_SERIAL_HANDLER
 // - USE_INTERRUPT_TWI_HANDLER
 // BEFORE THIS #INCLUSION
-#include <Arduino.h>
-
+// TIMER must be on
+#define USE_INTERRUPT_TIMER_HANDLER
 #include <ArduinoTools.h>
 
 class Events {
@@ -40,7 +41,7 @@ public:
 	 * Callback first argument is unused
 	 * Returns a pointer to an eventHandler structure
 	 */
-	eventHandler *registerTimeout(long ms, eventCallback callback, void *data);
+	eventHandler *registerTimeout(unsigned long ms, eventCallback callback, void *data);
 
 	/**
 	 * Fire a timer event every ms milliseconds, which will be handled
@@ -48,7 +49,7 @@ public:
 	 * Callback first argument is unused
 	 * Returns a pointer to an eventHandler structure
 	 */
-	eventHandler *registerInterval(long ms, eventCallback callback, void *data);
+	eventHandler *registerInterval(unsigned long ms, eventCallback callback, void *data);
 
 	/**
 	 * Fire a timer event, count times, every ms milliseconds.
@@ -56,7 +57,7 @@ public:
 	 * Callback first argument is unused
 	 * Returns a pointer to an eventHandler structure
 	 */
-	eventHandler *registerInterval(long ms, int count, eventCallback callback, void *data);
+	eventHandler *registerInterval(unsigned long ms, int count, eventCallback callback, void *data);
 
 	/**
 	 * Fire a "input" event each time hardware event "mode" occurs on pin "input"
@@ -81,6 +82,7 @@ public:
 	 * to call repeatedly, to handle queued events
 	 */
 	void waitNext();
+	void waitNext(word sleepMode);
 
 private:
 	byte eventHandlerMax;
@@ -91,5 +93,7 @@ private:
 
 	int findNewHandler();
 };
+
+extern Events Scheduler;
 
 #endif
