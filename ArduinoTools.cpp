@@ -1,4 +1,3 @@
-#define NOT_IN_MAIN 1
 #include "ArduinoTools.h"
 
 #ifndef _VECTOR_SIZE
@@ -158,6 +157,7 @@ bool disableInputInterrupt(byte input) {
 	return false;
 }
 
+// TODO : try to convert in macro TIMSK ## timer |= (1 << mode)
 bool enableTimerInterrupt(byte timer, byte mode) {
 	switch(timer) {
 	case 0:

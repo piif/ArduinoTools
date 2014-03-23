@@ -1,5 +1,4 @@
 
-#define NOT_IN_MAIN
 #include "delayIdle.h"
 
 #include <pwm/pwm.h>
@@ -91,36 +90,31 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 	innerloops = 0;
 	switch(timer) {
 	case 0:
-		TIMSK0 |= (1<<TOIE0);
 		TCNT0 = remainder;
 		break;
 	case 1:
-		TIMSK1 |= (1<<TOIE1);
 		TCNT1 = remainder;
 		break;
 	case 2:
-		TIMSK2 |= (1<<TOIE2);
 		TCNT2 = remainder;
 		break;
 #ifdef TCCR3A
 	case 3:
-		TIMSK3 |= (1<<TOIE3);
 		TCNT3 = remainder;
 		break;
 #endif
 #ifdef TCCR4A
 	case 4:
-		TIMSK4 |= (1<<TOIE4);
 		TCNT4 = remainder;
 		break;
 #endif
 #ifdef TCCR5A
 	case 5:
-		TIMSK5 |= (1<<TOIE5);
 		TCNT5 = remainder;
 		break;
 #endif
 	}
+	enableTimerInterrupt(timer, TIMER_OVERFLOW);
 
 	// wait for enough timer loops
 	while(delayLoops > 0) {
@@ -133,39 +127,7 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 		}
 	}
 	// stop to listen to interrupt
-	switch(timer) {
-	case 0:
-		TIMSK0 &= ~(1<<TOIE0);
-		TCNT0 = remainder;
-		break;
-	case 1:
-		TIMSK1 &= ~(1<<TOIE1);
-		TCNT1 = remainder;
-		break;
-	case 2:
-		TIMSK2 &= ~(1<<TOIE2);
-		TCNT2 = remainder;
-		break;
-#ifdef TCCR3A
-	case 3:
-		TIMSK3 &= ~(1<<TOIE3);
-		TCNT3 = remainder;
-		break;
-#endif
-#ifdef TCCR4A
-	case 4:
-		TIMSK4 &= ~(1<<TOIE4);
-		TCNT4 = remainder;
-		break;
-#endif
-#ifdef TCCR5A
-	case 5:
-		TIMSK5 &= ~(1<<TOIE5);
-		TCNT5 = remainder;
-		break;
-#endif
-	}
-
+	disableTimerInterrupt(timer, TIMER_OVERFLOW);
 	setTimerHandler(timer, before);
 
 	return result;
