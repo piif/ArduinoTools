@@ -67,11 +67,11 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 	long timerSize = (timer == 1) ? 65536 : 256;
 	delayLoops = ticks / timerSize;
 	int remainder;
-	if (delayLoops % timerSize == 0) {
+	if (ticks % timerSize == 0) {
 		remainder = 0;
-		delayLoops--;
 	} else {
 		remainder = timerSize - ticks % timerSize;
+		delayLoops++;
 	}
 //	Serial.print("delayIdle :");
 //	Serial.println(ticks);
@@ -83,8 +83,7 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 	setPWM(timer, 0, /* ICR ? */
 		COMPARE_OUTPUT_MODE_NONE, 0,
 		COMPARE_OUTPUT_MODE_NONE, 0,
-		(timer == 1) ? WGM_1_FAST_MAX : WGM_0_FAST_MAX, prescale);
-
+		WGM_NORMAL, prescale);
 
 	// listen for counter overflow interrupt
 	innerloops = 0;

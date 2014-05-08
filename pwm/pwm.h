@@ -34,6 +34,8 @@
 #define COMPARE_OUTPUT_MODE_INVERTED 3
 
 // TODO : constants for WGM values : to be documented !
+#define WGM_NORMAL 0
+
 #define WGM_0_FAST_MAX   3
 #define WGM_0_FAST_OCRA  7
 #define WGM_0_PHASE_MAX  1
