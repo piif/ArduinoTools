@@ -94,26 +94,77 @@ typedef union _tccr {
  */
 // mode = LOW, CHANGE, RISING, FALLING
 bool enableInputInterrupt(byte input, byte mode);
-bool disableInputInterrupt(byte input);
-
 // mode = TIMER_COMPARE_A, TIMER_COMPARE_B, TIMER_OVERFLOW
 bool enableTimerInterrupt(byte timer, byte mode);
-bool disableTimerInterrupt(byte timer, byte mode);
-
+bool disableInputInterrupt(byte input);
+#define ANALOGCOMP_INTERNAL 0x80
+// mode = CHANGE, RISING, FALLING and optionnaly OR'ed with ANALOGCOMP_INTERNAL
+bool enableAnalogCompInterrupt(byte mode);
 bool enableSerialInterrupt(byte serial);
-bool disableSerialInterrupt(byte serial);
-
 bool enableTwiInterrupt(byte twi);
+
+/**
+ * Disable given interrupt by setting according registers
+ * Returns true if required argument are implemented on current device
+ */
+bool disableTimerInterrupt(byte timer, byte mode);
+// if param disableComparator is TRUE, comparator is disabled too
+bool disableAnalogCompInterrupt(bool disableComparator);
+bool disableAnalogCompInterrupt();
+bool disableSerialInterrupt(byte serial);
 bool disableTwiInterrupt(byte twi);
 
 /**
  * Set given function as interrupt handler for given interrupt type & number,
  * or remove existing one if 0 is used as handler
  * Replace existing one if any
- * Returns old handler (0 is no handler)
+ * Returns old handler (0 if no handler)
  */
-#if defined(USE_INTERRUPT_INPUT_HANDLER) || \
-	defined(USE_INTERRUPT_INPUT_HANDLER_0) || \
+InterruptHandler setInputHandler(short inputNumber, InterruptHandler handler);
+InterruptHandler setTimerHandler(short timerNumber, InterruptHandler handler);
+InterruptHandler setAnalogCompHandler(InterruptHandler handler);
+InterruptHandler setSerialHandler(short serialNumber, InterruptHandler handler);
+InterruptHandler setTwiHandler(short twiNumber, InterruptHandler handler);
+
+#define analogCompValue() ((ACSR & (1 << ACO)) ? HIGH : LOW)
+/**
+ * some defines to have information on number of interrupts kind are available on current target
+ */
+// INT0_vect & 1 are always defined
+// INT2 to 7 depends on hardware
+#if defined(INT7_vect)
+	#define _INTERRUPTS_INPUT_TOTAL 8
+#elif defined(INT6_vect)
+	#define _INTERRUPTS_INPUT_TOTAL 7
+#elif defined(INT5_vect)
+	#define _INTERRUPTS_INPUT_TOTAL 6
+#elif defined(INT4_vect)
+	#define _INTERRUPTS_INPUT_TOTAL 5
+#elif defined(INT3_vect)
+	#define _INTERRUPTS_INPUT_TOTAL 4
+#elif defined(INT2_vect)
+	#define _INTERRUPTS_INPUT_TOTAL 3
+#else
+	#define _INTERRUPTS_INPUT_TOTAL 2
+#endif
+
+#if defined(TIMER5_OVF_vect)
+	#define _INTERRUPTS_TIMER_TOTAL 6
+#elif defined(TIMER4_OVF_vect)
+	#define _INTERRUPTS_TIMER_TOTAL 5
+#elif defined(TIMER3_OVF_vect)
+	#define _INTERRUPTS_TIMER_TOTAL 4
+#else
+	#define _INTERRUPTS_TIMER_TOTAL 3
+#endif
+
+#define _INTERRUPTS_ANALOGCOMP_TOTAL 1
+// not yet implemented.
+#define _INTERRUPTS_SERIAL_TOTAL 0
+#define _INTERRUPTS_TWI_TOTAL 0
+
+// internal defines to help in selection of ISR() to define
+#if defined(USE_INTERRUPT_INPUT_HANDLER_0) || \
 	defined(USE_INTERRUPT_INPUT_HANDLER_1) || \
 	defined(USE_INTERRUPT_INPUT_HANDLER_2) || \
 	defined(USE_INTERRUPT_INPUT_HANDLER_3) || \
@@ -123,14 +174,9 @@ bool disableTwiInterrupt(byte twi);
 	defined(USE_INTERRUPT_INPUT_HANDLER_7)
 
 	#define USE_INTERRUPT_INPUT_HANDLER
-
-	extern const short _interrupts_first_input;
-	#define setInputHandler(inputNumber, handler) \
-		setInterruptHandler(_interrupts_first_input + inputNumber, handler, inputNumber)
 #endif
 
-#if defined(USE_INTERRUPT_TIMER_HANDLER) || \
-	defined(USE_INTERRUPT_TIMER_HANDLER_0) || \
+#if defined(USE_INTERRUPT_TIMER_HANDLER_0) || \
 	defined(USE_INTERRUPT_TIMER_HANDLER_1) || \
 	defined(USE_INTERRUPT_TIMER_HANDLER_2) || \
 	defined(USE_INTERRUPT_TIMER_HANDLER_3) || \
@@ -138,41 +184,25 @@ bool disableTwiInterrupt(byte twi);
 	defined(USE_INTERRUPT_TIMER_HANDLER_5)
 
 	#define USE_INTERRUPT_TIMER_HANDLER
-
-	extern const short _interrupts_first_timer;
-	#define setTimerHandler(timerNumber, handler) \
-		setInterruptHandler(_interrupts_first_timer + timerNumber, handler, timerNumber)
 #endif
 
-#if defined(USE_INTERRUPT_SERIAL_HANDLER) || \
-	defined(USE_INTERRUPT_SERIAL_HANDLER_0) || \
+#if defined(USE_INTERRUPT_SERIAL_HANDLER_0) || \
 	defined(USE_INTERRUPT_SERIAL_HANDLER_1) || \
 	defined(USE_INTERRUPT_SERIAL_HANDLER_2)
 
 	#define USE_INTERRUPT_SERIAL_HANDLER
-
-	extern const short _interrupts_first_serial;
-	#define setSerialHandler(serialNumber, handler) \
-		setInterruptHandler(_interrupts_first_serial + serialNumber, handler, serialNumber)
 #endif
 
-#if defined(USE_INTERRUPT_TWI_HANDLER) || \
-	defined(USE_INTERRUPT_TWI_HANDLER_0) || \
+#if defined(USE_INTERRUPT_TWI_HANDLER_0) || \
 	defined(USE_INTERRUPT_TWI_HANDLER_1)
 
 	#define USE_INTERRUPT_TWI_HANDLER
-
-	extern const short _interrupts_first_twi;
-	#define setTwiHandler(twiNumber, handler) \
-		setInterruptHandler(_interrupts_first_twi + twiNumber, handler, twiNumber)
 #endif
-
-// underlying function
-InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler handler, int data);
 
 #if !defined(NOT_IN_MAIN) && ( \
 	defined(USE_INTERRUPT_INPUT_HANDLER) \
 	|| defined(USE_INTERRUPT_TIMER_HANDLER) \
+	|| defined(USE_INTERRUPT_ANALOGCOMP_HANDLER) \
 	|| defined(USE_INTERRUPT_SERIAL_HANDLER) \
 	|| defined(USE_INTERRUPT_TWI_HANDLER) )
 	#include <ArduinoToolsInternals.h>

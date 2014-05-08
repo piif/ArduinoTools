@@ -6,27 +6,12 @@ extern InterruptHandler interruptHandler[];
 	if (interruptHandler[n]) (interruptHandler[n])(data); \
 }
 
-#if defined(USE_INTERRUPT_INPUT_HANDLER)
+// underlying function
+InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler handler, int data);
 
+#if defined(USE_INTERRUPT_INPUT_HANDLER)
 	// enumerate input interrupts
 	#define _INTERRUPTS_FIRST_INPUT 0
-	// INT0_vect & 1 are always defined
-	// INT2 to 7 depends on hardware
-	#if defined(INT7_vect)
-		#define _INTERRUPTS_INPUT_TOTAL 8
-	#elif defined(INT6_vect)
-		#define _INTERRUPTS_INPUT_TOTAL 7
-	#elif defined(INT5_vect)
-		#define _INTERRUPTS_INPUT_TOTAL 6
-	#elif defined(INT4_vect)
-		#define _INTERRUPTS_INPUT_TOTAL 5
-	#elif defined(INT3_vect)
-		#define _INTERRUPTS_INPUT_TOTAL 4
-	#elif defined(INT2_vect)
-		#define _INTERRUPTS_INPUT_TOTAL 3
-	#else
-		#define _INTERRUPTS_INPUT_TOTAL 2
-	#endif
 
 	#if defined(USE_INTERRUPT_INPUT_HANDLER_0)
 		_set_ISR(INT0_vect, _INTERRUPTS_FIRST_INPUT+0, 0)
@@ -53,25 +38,22 @@ extern InterruptHandler interruptHandler[];
 		_set_ISR(INT7_vect, _INTERRUPTS_FIRST_INPUT+7, 7)
 	#endif
 
-	const short _interrupts_first_input = _INTERRUPTS_FIRST_INPUT;
-
 	#define __DELTA_1 _INTERRUPTS_FIRST_INPUT + _INTERRUPTS_INPUT_TOTAL
+
+	InterruptHandler setInputHandler(short inputNumber, InterruptHandler handler) {
+		return setInterruptHandler(_INTERRUPTS_FIRST_INPUT + inputNumber, handler, inputNumber);
+	}
 #else
 	#define __DELTA_1 0
+
+	InterruptHandler setInputHandler(short inputNumber, InterruptHandler handler) {
+		// TODO : how to specify "unavailable"
+		return 0;
+	}
 #endif
 
 #if defined(USE_INTERRUPT_TIMER_HANDLER)
 	#define _INTERRUPTS_FIRST_TIMER __DELTA_1
-
-	#if defined(TIMER5_OVF_vect)
-		#define _INTERRUPTS_TIMER_TOTAL 6
-	#elif defined(TIMER4_OVF_vect)
-		#define _INTERRUPTS_TIMER_TOTAL 5
-	#elif defined(TIMER3_OVF_vect)
-		#define _INTERRUPTS_TIMER_TOTAL 4
-	#else
-		#define _INTERRUPTS_TIMER_TOTAL 3
-	#endif
 
 	#if defined(USE_INTERRUPT_TIMER_HANDLER_0)
 		_set_ISR(TIMER0_OVF_vect, _INTERRUPTS_FIRST_TIMER+0, 0)
@@ -92,44 +74,87 @@ extern InterruptHandler interruptHandler[];
 		_set_ISR(TIMER5_OVF_vect, _INTERRUPTS_FIRST_TIMER+5, 5)
 	#endif
 
-	const short _interrupts_first_timer = _INTERRUPTS_FIRST_TIMER;
-
 	#define __DELTA_2 _INTERRUPTS_FIRST_TIMER + _INTERRUPTS_TIMER_TOTAL
+
+	InterruptHandler setTimerHandler(short timerNumber, InterruptHandler handler) {
+		return setInterruptHandler(_INTERRUPTS_FIRST_TIMER + timerNumber, handler, timerNumber);
+	}
 #else
 	#define __DELTA_2 __DELTA_1
+	InterruptHandler setTimerHandler(short timerNumber, InterruptHandler handler) {
+		// TODO : how to specify "unavailable"
+		return 0;
+	}
 #endif
 
+
+#if defined(USE_INTERRUPT_ANALOGCOMP_HANDLER)
+	#define _INTERRUPTS_FIRST_ANALOGCOMP __DELTA_2
+
+	#ifdef ANA_COMP_vect
+		_set_ISR(ANA_COMP_vect, _INTERRUPTS_FIRST_ANALOGCOMP, 0)
+	#else
+		_set_ISR(ANALOG_COMP_vect, _INTERRUPTS_FIRST_ANALOGCOMP, 0)
+	#endif
+
+	#define __DELTA_3 _INTERRUPTS_FIRST_ANALOGCOMP + 1
+
+	InterruptHandler setAnalogCompHandler(InterruptHandler handler) {
+		return setInterruptHandler(_INTERRUPTS_FIRST_ANALOGCOMP, handler, 0);
+	}
+#else
+	#define __DELTA_3 __DELTA_2
+
+	InterruptHandler setAnalogCompHandler(InterruptHandler handler) {
+		// TODO : how to specify "unavailable"
+		return 0;
+	}
+#endif
 
 
 #if defined(USE_INTERRUPT_SERIAL_HANDLER)
 
-	#define _INTERRUPTS_FIRST_SERIAL __DELTA_2
+	#define _INTERRUPTS_FIRST_SERIAL __DELTA_3
 	#error NOT YET IMPLEMENTED
 	#define _INTERRUPTS_SERIAL_TOTAL 0
 
-	const short _interrupts_first_serial = _INTERRUPTS_FIRST_SERIAL;
+	#define __DELTA_4 _INTERRUPTS_FIRST_SERIAL + _INTERRUPTS_SERIAL_TOTAL
 
-	#define __DELTA_3 _INTERRUPTS_FIRST_SERIAL + _INTERRUPTS_SERIAL_TOTAL
+	InterruptHandler setSerialHandler(short serialNumber, InterruptHandler handler) {
+		return setInterruptHandler(_INTERRUPTS_FIRST_SERIAL + serialNumber, handler, serialNumber);
+	}
 #else
-	#define __DELTA_3 __DELTA_2
+	#define __DELTA_4 __DELTA_3
+
+	InterruptHandler setSerialHandler(short serialNumber, InterruptHandler handler) {
+		// TODO : how to specify "unavailable"
+		return 0;
+	}
 #endif
 
 
 
 #if defined(USE_INTERRUPT_TWI_HANDLER)
 
-	#define _INTERRUPTS_FIRST_TWI __DELTA_3
+	#define _INTERRUPTS_FIRST_TWI __DELTA_4
 	#error NOT YET IMPLEMENTED
 	#define _INTERRUPTS_TWI_TOTAL 0
 
-	const short _interrupts_first_twi = _INTERRUPTS_FIRST_TWI;
+	#define __DELTA_5 _INTERRUPTS_FIRST_TWI + _INTERRUPTS_TWI_TOTAL
 
-	#define __DELTA_4 _INTERRUPTS_FIRST_TWI + _INTERRUPTS_TWI_TOTAL
+	InterruptHandler setTwiHandler(short twiNumber, InterruptHandler handler) {
+		return setInterruptHandler(_INTERRUPTS_FIRST_TWI + twiNumber, handler, twiNumber);
+	}
 #else
-	#define __DELTA_4 __DELTA_3
+	#define __DELTA_5 __DELTA_4
+
+	InterruptHandler setTwiHandler(short twiNumber, InterruptHandler handler) {
+		// TODO : how to specify "unavailable"
+		return 0;
+	}
 #endif
 
-#define _INTERRUPTS_TOTAL __DELTA_4
+#define _INTERRUPTS_TOTAL __DELTA_5
 
 // now, we know how many handlers we must store
 InterruptHandler interruptHandler[_INTERRUPTS_TOTAL] = { 0, };

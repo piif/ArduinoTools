@@ -217,6 +217,40 @@ bool disableTimerInterrupt(byte timer, byte mode) {
 	return false;
 }
 
+bool enableAnalogCompInterrupt(byte mode) {
+	byte modeBits = ((mode & ANALOGCOMP_INTERNAL) != 0) ? (1<<ACBG) : 0;
+
+	// first clear interrupt flag to change mode without side effects, and other used ones
+	// to just have to set usefull ones
+	ACSR &= ~((1 << ACIE) || (1 << ACIS1) || (1 << ACIS0) || (1<<ACBG));
+	// compute ACISx bits
+	switch (mode & ~ANALOGCOMP_INTERNAL) {
+	case FALLING:
+		modeBits |= 1 << ACIS1;
+		break;
+	case RISING:
+		modeBits |= (1 << ACIS1) | (1 << ACIS0);
+		break;
+	// CHANGE => let to 0
+	}
+	ACSR |= modeBits;
+	// finally, set AC Interrupt Enable and enable comparator
+	ACSR &= ~(1 << ACD);
+	ACSR |= (1 << ACIE);
+	return true;
+}
+bool disableAnalogCompInterrupt() {
+	return disableAnalogCompInterrupt(false);
+}
+bool disableAnalogCompInterrupt(bool disableComparator) {
+	// clear AC Interrupt Enable and disable comparator
+	ACSR &= ~(1 << ACIE);
+	if (disableComparator) {
+		ACSR |= 1 << ACD;
+	}
+	return true;
+}
+
 bool enableSerialInterrupt(byte serial) {
 	return false;
 }
