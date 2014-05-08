@@ -11,7 +11,9 @@
 #define USE_INTERRUPT_TIMER_HANDLER
 #include <ArduinoTools.h>
 
+// for sleep modes debug
 extern int innerloops;
+
 /**
  * default timer to use
  */
@@ -23,28 +25,33 @@ extern int innerloops;
  * Returns true if delay was achieved, false if it was interrupted
  */
 bool delayIdle(unsigned long microseconds);
+bool delayOrInterruptIdle(unsigned long microseconds);
 
 /**
  * Same method as delayIdle(), but specify a sleep mode to use
  * Be careful to choose a mode which doesn't disable the timer !
  */
 bool delayIdle(unsigned long microseconds, word sleep_mode);
+bool delayOrInterruptIdle(unsigned long microseconds, word sleep_mode);
 
 /**
  * Same method as delayIdle(), but specify a timer to use
  */
 bool delayIdleWith(unsigned long microseconds, byte timer);
+bool delayOrInterruptIdleWith(unsigned long microseconds, byte timer);
 
 /**
  * Same method as delayIdleWith(), but specify a sleep mode to use
  * Be careful to choose a mode which doesn't disable the timer !
  */
 bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode);
+bool delayOrInterruptIdleWith(unsigned long microseconds, byte timer, word sleep_mode);
+bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool cancelOnInterrupt);
 
 /**
  * An interrupt handler may call this method to cancel a running delayIdle()
  */
-void delayCancel();
+void delayCancel(byte timer);
 
 /**
  * Force to sleep mode, until "something" wake CPU on

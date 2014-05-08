@@ -4,17 +4,17 @@
 #include <pwm/pwm.h>
 
 // TODO : one variable per timer !!!
-volatile long delayLoops = -1;
-volatile bool cancelFlag = false;
+volatile long delayLoops[_INTERRUPTS_TIMER_TOTAL] = { -1, };
+volatile bool cancelFlag[_INTERRUPTS_TIMER_TOTAL] = { false, };
 
 // for sleep modes debug
 int innerloops = 0;
 
 void delayIdleISR(int data) {
-	delayLoops--;
+	delayLoops[data]--;
 }
 
-bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
+bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool cancelOnInterrupt) {
 	bool result = true;
 
 	InterruptHandler before = setTimerHandler(timer, delayIdleISR);
@@ -65,13 +65,13 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 	}
 
 	long timerSize = (timer == 1) ? 65536 : 256;
-	delayLoops = ticks / timerSize;
+	delayLoops[timer] = ticks / timerSize;
 	int remainder;
 	if (ticks % timerSize == 0) {
 		remainder = 0;
 	} else {
 		remainder = timerSize - ticks % timerSize;
-		delayLoops++;
+		delayLoops[timer]++;
 	}
 //	Serial.print("delayIdle :");
 //	Serial.println(ticks);
@@ -115,12 +115,15 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 	}
 	enableTimerInterrupt(timer, TIMER_OVERFLOW);
 
+	long delayLoopsBefore;
+
 	// wait for enough timer loops
-	while(delayLoops > 0) {
+	while(delayLoops[timer] > 0) {
 		innerloops++;
+		delayLoopsBefore = delayLoops[timer];
 		sleepNow(sleep_mode);
-		if (cancelFlag) {
-			cancelFlag = false;
+		if ((cancelOnInterrupt && delayLoopsBefore == delayLoops[timer]) || cancelFlag[timer]) {
+			cancelFlag[timer] = false;
 			result = false;
 			break;
 		}
@@ -132,16 +135,34 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
 	return result;
 }
 
-bool delayIdleWith(unsigned long microseconds, byte timer) {
-	return delayIdleWith(microseconds, timer, DEFAULT_SLEEP_MODE);
-}
-bool delayIdle(unsigned long microseconds, word sleep_mode) {
-	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, sleep_mode);
-}
 bool delayIdle(unsigned long microseconds) {
-	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, DEFAULT_SLEEP_MODE);
+	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, DEFAULT_SLEEP_MODE, false);
+}
+bool delayOrInterruptIdle(unsigned long microseconds) {
+	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, DEFAULT_SLEEP_MODE, true);
 }
 
-void delayCancel() {
-	cancelFlag = true;
+bool delayIdleWith(unsigned long microseconds, byte timer) {
+	return delayIdleWith(microseconds, timer, DEFAULT_SLEEP_MODE, false);
+}
+bool delayOrInterruptIdleWith(unsigned long microseconds, byte timer) {
+	return delayIdleWith(microseconds, timer, DEFAULT_SLEEP_MODE, true);
+}
+
+bool delayIdle(unsigned long microseconds, word sleep_mode) {
+	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, sleep_mode, false);
+}
+bool delayOrInterruptIdle(unsigned long microseconds, word sleep_mode) {
+	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, sleep_mode, true);
+}
+
+bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
+	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, sleep_mode, false);
+}
+bool delayOrInterruptIdleWith(unsigned long microseconds, byte timer, word sleep_mode) {
+	return delayIdleWith(microseconds, DEFAULT_DELAY_TIMER, sleep_mode, true);
+}
+
+void delayCancel(byte timer) {
+	cancelFlag[timer] = true;
 }
