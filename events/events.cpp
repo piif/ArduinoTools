@@ -54,19 +54,21 @@ void Events::begin() {
 	begin(DEFAULT_EVENTS_TIMER, DEFAULT_EVENTS_TIMEOUT);
 }
 
-void Events::fire(Events::eventType type) {
-	fire(type, -1);
+bool Events::fire(Events::eventType type) {
+	return fire(type, -1);
 }
-void Events::fire(Events::eventType type, short detail) {
+bool Events::fire(Events::eventType type, short detail) {
 	delayCancel(defaultTimer);
 	byte qs = queueSize;
 	if (qs >= MAX_QUEUE_SIZE) {
 		// full => ignore
-		return;
+		return false;
 	}
 	eventQueueTypes[qs] = type;
 	eventQueueDetails[qs] = detail;
 	queueSize++;
+
+	return true;
 }
 
 void Events::waitNext() {
@@ -101,15 +103,16 @@ void Events::waitNext(word sleepMode) {
 	// TODO µs or ms ????
 
 	// look at expired timer events + compute next time
+	bool found = false;
 	unsigned long now = (millis() * 1000) + (micros() % 1000);
-	unsigned long next = 0xffffffffL; // now + 100000L; // by default, wait 0.1s
+	unsigned long next = 0xffffffffL;
 
 	for(int h = 0; h < eventHandlerMax; h++) {
 		eventHandler *hdl = &(handlers[h]);
 
 		if (hdl->type == event_timer) {
 			// is it expired ? => handle
-			if (hdl->timerSpec.next <= now) {
+			if (hdl->timerSpec.next <= now + TIMER_EVENT_PRECISION) {
 				hdl->callback(-1, hdl->data);
 				if (hdl->timerSpec.count == 1) {
 					unregisterEvent(hdl);
@@ -119,26 +122,34 @@ void Events::waitNext(word sleepMode) {
 					}
 					do {
 						hdl->timerSpec.next += hdl->timerSpec.delay * 1000;
-					} while(hdl->timerSpec.next < now);
+					} while(hdl->timerSpec.next < now + TIMER_EVENT_PRECISION);
 				}
 			}
 
 			if (next > hdl->timerSpec.next) {
 				next = hdl->timerSpec.next;
+				found = true;
 			}
 		}
 	}
-	if (next == 0xffffffffL) {
+	if (!found) {
 		if (defaultTimeout == 0) {
 			sleepNow(sleepMode);
 		} else {
-			next = now + defaultTimeout;
 			// wait in a interruptible manner, until default timeout
 			delayIdleWith(defaultTimeout, defaultTimer, sleepMode, true);
 		}
 	} else {
 		// wait in a interruptible manner
-		delayIdleWith(next - now, defaultTimer, sleepMode, true);
+		// TODO : remove time ellapse since "now" calculation, but risks to be too late
+		// round value too TIMER_EVENT_PRECISION multiple
+		long delay = next - now, rem = delay % TIMER_EVENT_PRECISION;
+		if (rem > TIMER_EVENT_PRECISION / 2) {
+			delay -= rem + TIMER_EVENT_PRECISION;
+		} else {
+			delay -= rem;
+		}
+		delayIdleWith(delay, defaultTimer, sleepMode, true);
 	}
 }
 
@@ -168,7 +179,7 @@ Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Even
 	}
 
 	result->timerSpec.delay = ms;
-	result->timerSpec.next = (millis() + ms) * 1000 + micros();
+	result->timerSpec.next = 0; //(millis() + ms) * 1000 + micros();
 	result->timerSpec.count = count;
 
 	// TODO : update global delay if empty or if "next" is before

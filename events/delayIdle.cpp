@@ -3,7 +3,6 @@
 
 #include <pwm/pwm.h>
 
-// TODO : one variable per timer !!!
 volatile long delayLoops[_INTERRUPTS_TIMER_TOTAL] = { -1, };
 volatile bool cancelFlag[_INTERRUPTS_TIMER_TOTAL] = { false, };
 
@@ -73,11 +72,12 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool
 		remainder = timerSize - ticks % timerSize;
 		delayLoops[timer]++;
 	}
-//	Serial.print("delayIdle :");
+//	Serial.print("delayIdle : ");
+//	Serial.print(prescale);
+//	Serial.print(" / ");
 //	Serial.println(ticks);
-//	Serial.println(delayLoops);
-//	Serial.println(remainder);
 //	Serial.flush();
+//	delay(400);
 
 	// compute cycle total, loop number, prescale/mode
 	setPWM(timer, 0, /* ICR ? */

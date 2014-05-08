@@ -1,6 +1,20 @@
 /**
  * some defines and methods to handle some low level features like
  * interrupts and timers
+ *
+ * set*Handler functions are correctly implemented if some defines are set :
+ * CALLER MUST DECIDE WHICH KIND OF HANDLERS HE WANTS, BY #DEFINING
+ * ONE OR SEVERAL OF
+ * - USE_INTERRUPT_TIMER_HANDLER_x (must match defaultTimer value)
+ * - USE_INTERRUPT_INPUT_HANDLER_x
+ * - USE_INTERRUPT_ANALAGCOMP_HANDLER
+ * - USE_INTERRUPT_SERIAL_HANDLER_x
+ * - USE_INTERRUPT_TWI_HANDLER_x
+ * BEFORE THIS #INCLUSION
+ *
+ * If TIMER0 is used, it must override default one defined in wiring.c
+ *  (used for millis(), delay() ..)
+ * In this case, option -Wl,--allow-multiple-definition is needed or linking will fail.
  */
 
 #ifndef AVRTOOLS_H
@@ -9,6 +23,11 @@
 #include <Arduino.h>
 #include <avr/io.h>
 #include <avr/sleep.h>
+
+// for debug purpose
+#ifdef ARDUINO_TOOLS_DEBUG
+extern int ISRnum, ISRlast1, ISRlast2;
+#endif
 
 /**
  * default sleep mode to use
