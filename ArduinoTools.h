@@ -69,6 +69,12 @@ typedef void (*InterruptHandler)(int data);
 
 #if defined (__AVR_ATmega328P__)
 	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : ((p) == 3) ? 1 : -1)
+#elif defined (__AVR_ATmega32U4__)
+	#define INTERRUPT_FOR_PIN(p) (((p) == 0) ? 2 : \
+			((p) == 1) ? 3 : \
+			((p) == 2) ? 1 : \
+			((p) == 3) ? 0 : \
+			((p) == 7) ? 6 : -1)
 #elif defined (__AVR_ATmega2560__)
 	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : \
 			((p) == 3) ? 1 : \
@@ -83,6 +89,7 @@ typedef void (*InterruptHandler)(int data);
 
 /**
  * structure to map TCCR* registers to word variables
+ * usefull to change timer/pwm parameters
  */
 typedef union _tccr {
 	word all;
@@ -137,8 +144,7 @@ bool enableInputInterrupt(byte input, byte mode);
 // mode = TIMER_COMPARE_A, TIMER_COMPARE_B, TIMER_OVERFLOW
 bool enableTimerInterrupt(byte timer, byte mode);
 bool disableInputInterrupt(byte input);
-#define ANALOGCOMP_INTERNAL 0x80
-// mode = CHANGE, RISING, FALLING and optionnaly OR'ed with ANALOGCOMP_INTERNAL
+// mode = CHANGE, RISING, FALLING
 bool enableAnalogCompInterrupt(byte mode);
 bool enableSerialInterrupt(byte serial);
 bool enableTwiInterrupt(byte twi);
@@ -167,6 +173,18 @@ InterruptHandler setSerialHandler(short serialNumber, InterruptHandler handler);
 InterruptHandler setTwiHandler(short twiNumber, InterruptHandler handler);
 
 #define analogCompValue() ((ACSR & (1 << ACO)) ? HIGH : LOW)
+#define ANALOG_COMP_SOURCE_AIN1 255
+
+/**
+ * set analog comparator source to AIN1 pin (depends on hardware) or to one of
+ * ADC inputs (0 to n, n <= 5 excepted for mega, <= 15)
+ */
+bool setAnalogCompSource(byte source);
+#define ANALOG_COMP_REFERENCE_AIN0 0
+#define ANALOG_COMP_REFERENCE_INTERNAL 1
+bool setAnalogCompReference(byte ref);
+
+
 /**
  * some defines to have information on number of interrupts kind are available on current target
  */
