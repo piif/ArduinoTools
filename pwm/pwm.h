@@ -73,7 +73,7 @@
 #define PWM_5_B 45
 #define PWM_5_C 44
 
-#else
+#elif defined __AVR_ATmega328P__
 
 /** UNO */
 #define PWM_0_A 6
@@ -83,9 +83,26 @@
 #define PWM_2_A 11
 #define PWM_2_B 3
 
+#elif defined __AVR_ATmega32U4__
+
+/** Micro / Leonardo / Yun */
+#define PWM_0_A 11
+#define PWM_0_B 3
+#define PWM_1_A 9
+#define PWM_1_B 10
+#define PWM_1_C 11
+#define PWM_3_A 5
+#define PWM_4_A 13
+#define PWM_4_B 10
+#define PWM_4_C 6
+
+#else
+#error Unknown arduino model
 #endif
 
 // clock prescalers
+// TODO verify values for 2560 and 32u4
+
 #define PWM0_PRESCALER_1    1
 #define PWM0_PRESCALER_8    2
 #define PWM0_PRESCALER_64   3

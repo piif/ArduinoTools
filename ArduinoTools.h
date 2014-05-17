@@ -30,6 +30,19 @@ extern int ISRnum, ISRlast1, ISRlast2;
 #endif
 
 /**
+ * How to know which kind of arduino we are compiling for :
+ */
+#if defined(__AVR_ATmega32U4__)
+// it's a Leonardo, Micro or Yun
+#elif defined(__AVR_ATmega328P__)
+// it's a Uno
+#elif defined(__AVR_ATmega2560__)
+// it's a Mega
+#else
+// I don't know ...
+#endif
+
+/**
  * default sleep mode to use
  */
 #define DEFAULT_SLEEP_MODE SLEEP_MODE_IDLE
@@ -103,9 +116,17 @@ typedef union _tccr {
 	variable.fields.WGMnL = (wgm) & 0x3;  \
 	variable.fields.WGMnH = (wgm) >> 2
 
+// TOIEx and OCIExx have same values for timers 0 to 5, excepted for leonardo family
+// where timer4 is different, but *ableTimerInterrupt function handle this case
+#define TIMER_OVERFLOW  TOIE0
 #define TIMER_COMPARE_A OCIE0A
 #define TIMER_COMPARE_B OCIE0B
-#define TIMER_OVERFLOW  TOIE0
+#ifdef OCIE1C
+#define TIMER_COMPARE_C OCIE1C
+#endif
+#ifdef OCIE4D
+#define TIMER_COMPARE_D OCIE4D
+#endif
 
 /**
  * Enable given interrupt by setting according registers
