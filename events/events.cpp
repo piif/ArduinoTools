@@ -121,7 +121,7 @@ void Events::waitNext(word sleepMode) {
 		unsigned long now = (millis() * 1000) + (micros() % 1000);
 		next = 0xffffffffL;
 
-		for(int h = 0; h < eventHandlerMax; h++) {
+		for (int h = 0; h < eventHandlerMax; h++) {
 			eventHandler *hdl = &(handlers[h]);
 
 			if (hdl->type == event_timer) {
