@@ -3,14 +3,18 @@
 extern InterruptHandler interruptHandler[];
 
 #ifdef ARDUINO_TOOLS_DEBUG
-	int ISRnum = 0;
-	int ISRlast1 = -1;
-	int ISRlast2 = -1;
+	volatile int ISRnum = 0;
+	volatile int ISRcalled = 0;
+	volatile int ISRlast1 = -1;
+	volatile int ISRlast2 = -1;
 	#define _set_ISR(vect, n, data) ISR(vect) { \
 		ISRnum++; \
 		ISRlast2 = ISRlast1; \
 		ISRlast1 = n; \
-		if (interruptHandler[n]) (interruptHandler[n])(data); \
+		if (interruptHandler[n]) { \
+			(interruptHandler[n])(data); \
+			ISRcalled++; \
+		} \
 	}
 #else
 	#define _set_ISR(vect, n, data) ISR(vect) { \

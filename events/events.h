@@ -117,6 +117,12 @@ public:
 	void waitNext();
 	void waitNext(word sleepMode);
 
+	/**
+	 * +1 after each call to waitNext => allow user to know if several successive handlers
+	 * are called from within the same waitNext call.
+	 */
+	int eventLoop;
+
 	Events();
 
 private:

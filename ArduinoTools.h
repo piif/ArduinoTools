@@ -26,7 +26,19 @@
 
 // for debug purpose
 #ifdef ARDUINO_TOOLS_DEBUG
-extern int ISRnum, ISRlast1, ISRlast2;
+extern volatile int ISRnum, ISRcalled, ISRlast1, ISRlast2;
+#endif
+
+#ifdef ARDUINO_TOOLS_DEBUG
+	#define LOG(str)  Serial.println(str); Serial.flush();
+	#define LOGd(v) Serial.print(#v "\t: "); Serial.println(v); Serial.flush();
+	#define LOGx(v) Serial.print(#v "\t: 0x"); Serial.println(v, HEX); Serial.flush();
+	#define LOGb(v) Serial.print(#v "\t: 0b"); Serial.println(v, BIN); Serial.flush();
+#else
+	#define LOG(str)
+	#define LOGd(v)
+	#define LOGx(v)
+	#define LOGb(v)
 #endif
 
 /**
@@ -86,6 +98,16 @@ typedef void (*InterruptHandler)(int data);
 	#define INTERRUPT_FOR_PIN(p) (-1)
 	#warning variant not implemented
 #endif
+
+/**
+ * bitWrite(dest, bit, value) is defined in arduino.h to fix value of bit "bit" into "dest"
+ * bitWrite2,3,4 do the same with a 2,3,4 bits value, "bit" being lower one
+ * Thus bitWrite4(x, 4, 0xA) with x==0 before implies x to became 0xA0
+ */
+#define bitWrite2(dest, bit, value) (dest) = (((dest) & ~(0x3UL << bit)) | (((value & 0x3UL)) << bit))
+#define bitWrite3(dest, bit, value) (dest) = (((dest) & ~(0x7UL << bit)) | (((value & 0x7UL)) << bit))
+#define bitWrite4(dest, bit, value) (dest) = (((dest) & ~(0xfUL << bit)) | (((value & 0xfUL)) << bit))
+
 
 /**
  * structure to map TCCR* registers to word variables
@@ -172,16 +194,37 @@ InterruptHandler setAnalogCompHandler(InterruptHandler handler);
 InterruptHandler setSerialHandler(short serialNumber, InterruptHandler handler);
 InterruptHandler setTwiHandler(short twiNumber, InterruptHandler handler);
 
+#if defined(__AVR_ATmega32U4__)
+	// input only from ADC
+	#define ANALOG_COMP_INPUT -1
+	#define ANALOG_COMP_REFERENCE 7
+#elif defined(__AVR_ATmega328P__)
+	#define ANALOG_COMP_INPUT 7
+	#define ANALOG_COMP_REFERENCE 6
+#elif defined(__AVR_ATmega2560__)
+	#define ANALOG_COMP_INPUT 5
+	// ref only from internal
+	#define ANALOG_COMP_REFERENCE -1
+#else
+#warning unknown hardware
+#endif
+
 #define analogCompValue() ((ACSR & (1 << ACO)) ? HIGH : LOW)
+
 #define ANALOG_COMP_SOURCE_AIN1 255
 
 /**
- * set analog comparator source to AIN1 pin (depends on hardware) or to one of
- * ADC inputs (0 to n, n <= 5 excepted for mega, <= 15)
+ * set analog comparator source to AIN1 pin (depends on hardware) or one of
+ * ADC inputs (A0 to An, n <= 5 excepted for mega, <= 15)
  */
 bool setAnalogCompSource(byte source);
+
 #define ANALOG_COMP_REFERENCE_AIN0 0
 #define ANALOG_COMP_REFERENCE_INTERNAL 1
+
+/**
+ * set analog comparator reference to AIN0 or internal reference
+ */
 bool setAnalogCompReference(byte ref);
 
 
