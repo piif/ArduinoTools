@@ -94,9 +94,11 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool
 	case 1:
 		TCNT1 = remainder;
 		break;
+#ifdef TCCR2A
 	case 2:
 		TCNT2 = remainder;
 		break;
+#endif
 #ifdef TCCR3A
 	case 3:
 		TCNT3 = remainder;
