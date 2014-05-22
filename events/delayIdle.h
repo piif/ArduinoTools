@@ -19,6 +19,8 @@ extern int innerloops;
  */
 #define DEFAULT_DELAY_TIMER 1
 
+// TODO : add an option to handle delay with Watchdog Timer instead => no timer used, but less precision
+
 /**
  * This methods returns after "microseconds" µs, but may be cancelled by
  * delayCancel() calls.

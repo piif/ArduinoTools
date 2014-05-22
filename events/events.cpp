@@ -32,12 +32,16 @@ struct _eventHandler {
 	};
 };
 
+// fire only one analog comp event per event loop
+volatile bool analogCompAlready;
+
 Events::Events() {
 	eventHandlerMax = 0;
 	handlers = 0;
 	queueSize = 0;
 	eventQueueTypes = 0;
 	eventQueueDetails = 0;
+	eventLoop = 0;
 
 	defaultTimer = DEFAULT_EVENTS_TIMER;
 	defaultTimeout = DEFAULT_EVENTS_TIMEOUT;
@@ -54,19 +58,21 @@ void Events::begin() {
 	begin(DEFAULT_EVENTS_TIMER, DEFAULT_EVENTS_TIMEOUT);
 }
 
-void Events::fire(Events::eventType type) {
-	fire(type, -1);
+bool Events::fire(Events::eventType type) {
+	return fire(type, -1);
 }
-void Events::fire(Events::eventType type, short detail) {
-	delayCancel(defaultTimer);
+bool Events::fire(Events::eventType type, short detail) {
+//	delayCancel(defaultTimer);
 	byte qs = queueSize;
 	if (qs >= MAX_QUEUE_SIZE) {
 		// full => ignore
-		return;
+		return false;
 	}
 	eventQueueTypes[qs] = type;
 	eventQueueDetails[qs] = detail;
 	queueSize++;
+
+	return true;
 }
 
 void Events::waitNext() {
@@ -74,72 +80,96 @@ void Events::waitNext() {
 }
 
 void Events::waitNext(word sleepMode) {
-	// for each fired events, call callback
-	for(int q = 0; q < queueSize; q++) {
-		for(int h = 0; h < eventHandlerMax; h++) {
-			if (eventQueueTypes[q] == handlers[h].type) {
-				// this handler may be for this event
-				eventHandler *hdl = &(handlers[h]);
+	if (queueSize == MAX_QUEUE_SIZE) {
+		LOG("Queue was full");
+	}
 
-				if (hdl->type == event_input) {
-					// is it for this interrupt ?
-					if (hdl->inputSpec.interrupt == eventQueueDetails[q]) {
+	bool found = false;
+	unsigned long next = 0xffffffffL;
+
+	// loop on event queue THEN on timers
+	// but at end of event queue, we may have new items in queue => must loop
+	while (queueSize > 0) {
+		// for each fired events, call callback
+		for (int q = 0; q < queueSize; q++) {
+			for (int h = 0; h < eventHandlerMax; h++) {
+				if (eventQueueTypes[q] == handlers[h].type) {
+					// this handler may be for this event
+					eventHandler *hdl = &(handlers[h]);
+
+					if (hdl->type == event_input) {
+						// is it for this interrupt ?
+						if (hdl->inputSpec.interrupt == eventQueueDetails[q]) {
+							hdl->callback(eventQueueDetails[q], hdl->data);
+						}
+					} else if (hdl->type == event_analogcomp) {
+						bool state = analogCompValue() ? RISING : FALLING;
+						if (hdl->analogCompSpec.mode == CHANGE || hdl->analogCompSpec.mode == state) {
+							hdl->callback(state, hdl->data);
+						}
+					} else if (hdl->type >= 10) {
 						hdl->callback(eventQueueDetails[q], hdl->data);
 					}
-				} else if (hdl->type == event_analogcomp) {
-					if (hdl->analogCompSpec.mode == CHANGE || hdl->analogCompSpec.mode == eventQueueDetails[q]) {
-						hdl->callback(eventQueueDetails[q], hdl->data);
+				}
+			}
+		}
+		queueSize = 0;
+
+		// look at expired timer events + compute next time
+		// TODO : must avoid to use millis/micros
+		// => must compute our own time ellapsed since preceding call, using timer values
+		unsigned long now = (millis() * 1000) + (micros() % 1000);
+		next = 0xffffffffL;
+
+		for (int h = 0; h < eventHandlerMax; h++) {
+			eventHandler *hdl = &(handlers[h]);
+
+			if (hdl->type == event_timer) {
+				// is it expired ? => handle
+				if (hdl->timerSpec.next <= now + TIMER_EVENT_PRECISION) {
+					hdl->callback(-1, hdl->data);
+					if (hdl->timerSpec.count == 1) {
+						unregisterEvent(hdl);
+					} else {
+						if (hdl->timerSpec.count > 0) {
+							hdl->timerSpec.count--;
+						}
+						do {
+							hdl->timerSpec.next += hdl->timerSpec.delay * 1000;
+						} while(hdl->timerSpec.next < now + TIMER_EVENT_PRECISION);
 					}
-				} else if (hdl->type >= 10) {
-					hdl->callback(eventQueueDetails[q], hdl->data);
+				}
+
+				if (next > hdl->timerSpec.next) {
+					next = hdl->timerSpec.next;
+					found = true;
 				}
 			}
 		}
 	}
-	queueSize = 0;
 
-	// TODO µs or ms ????
-
-	// look at expired timer events + compute next time
-	unsigned long now = (millis() * 1000) + (micros() % 1000);
-	unsigned long next = 0xffffffffL; // now + 100000L; // by default, wait 0.1s
-
-	for(int h = 0; h < eventHandlerMax; h++) {
-		eventHandler *hdl = &(handlers[h]);
-
-		if (hdl->type == event_timer) {
-			// is it expired ? => handle
-			if (hdl->timerSpec.next <= now) {
-				hdl->callback(-1, hdl->data);
-				if (hdl->timerSpec.count == 1) {
-					unregisterEvent(hdl);
-				} else {
-					if (hdl->timerSpec.count > 0) {
-						hdl->timerSpec.count--;
-					}
-					do {
-						hdl->timerSpec.next += hdl->timerSpec.delay * 1000;
-					} while(hdl->timerSpec.next < now);
-				}
-			}
-
-			if (next > hdl->timerSpec.next) {
-				next = hdl->timerSpec.next;
-			}
-		}
-	}
-	if (next == 0xffffffffL) {
+	if (!found) {
 		if (defaultTimeout == 0) {
 			sleepNow(sleepMode);
 		} else {
-			next = now + defaultTimeout;
 			// wait in a interruptible manner, until default timeout
 			delayIdleWith(defaultTimeout, defaultTimer, sleepMode, true);
 		}
 	} else {
 		// wait in a interruptible manner
-		delayIdleWith(next - now, defaultTimer, sleepMode, true);
+		// TODO : remove time ellapsed since "now" calculation, but risks to be too late
+		// round value too TIMER_EVENT_PRECISION multiple
+		long delay = next - now, rem = delay % TIMER_EVENT_PRECISION;
+		if (rem > TIMER_EVENT_PRECISION / 2) {
+			delay -= rem + TIMER_EVENT_PRECISION;
+		} else {
+			delay -= rem;
+		}
+		delayIdleWith(delay, defaultTimer, sleepMode, true);
 	}
+
+	analogCompAlready = false;
+	eventLoop++;
 }
 
 Events::eventHandler *Events::registerEvent(Events::eventType type, Events::eventCallback callback, void *data) {
@@ -168,7 +198,7 @@ Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Even
 	}
 
 	result->timerSpec.delay = ms;
-	result->timerSpec.next = (millis() + ms) * 1000 + micros();
+	result->timerSpec.next = 0; //(millis() + ms) * 1000 + micros();
 	result->timerSpec.count = count;
 
 	// TODO : update global delay if empty or if "next" is before
@@ -201,16 +231,11 @@ Events::eventHandler *Events::registerInput(byte input, byte mode, Events::event
 	return result;
 }
 
-volatile bool lastAnalogComp;
-
 void analogCompHandler(int interrupt) {
-	bool newAnalogComp = analogCompValue();
-	if (newAnalogComp == lastAnalogComp) {
-		// should not happen ???
-		return;
-	}
-	lastAnalogComp = newAnalogComp;
-	Scheduler.fire(Events::event_analogcomp, newAnalogComp ? RISING : FALLING);
+	if (analogCompAlready) return;
+	analogCompAlready = true;
+	Scheduler.fire(Events::event_analogcomp, 0); // event loop handler will get analog comp value
+	// to avoid bouncing values
 }
 
 Events::eventHandler *Events::registerAnalogComp(byte mode, Events::eventCallback callback, void *data) {
@@ -223,7 +248,6 @@ Events::eventHandler *Events::registerAnalogComp(byte mode, Events::eventCallbac
 
 	if (!findOther(event_analogcomp, 0xff, result->id)) {
 		setAnalogCompHandler(analogCompHandler);
-		lastAnalogComp = analogCompValue();
 		enableAnalogCompInterrupt(CHANGE);
 	}
 

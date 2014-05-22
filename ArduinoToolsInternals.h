@@ -2,9 +2,25 @@
 
 extern InterruptHandler interruptHandler[];
 
-#define _set_ISR(vect, n, data) ISR(vect) { \
-	if (interruptHandler[n]) (interruptHandler[n])(data); \
-}
+#ifdef ARDUINO_TOOLS_DEBUG
+	volatile int ISRnum = 0;
+	volatile int ISRcalled = 0;
+	volatile int ISRlast1 = -1;
+	volatile int ISRlast2 = -1;
+	#define _set_ISR(vect, n, data) ISR(vect) { \
+		ISRnum++; \
+		ISRlast2 = ISRlast1; \
+		ISRlast1 = n; \
+		if (interruptHandler[n]) { \
+			(interruptHandler[n])(data); \
+			ISRcalled++; \
+		} \
+	}
+#else
+	#define _set_ISR(vect, n, data) ISR(vect) { \
+		if (interruptHandler[n]) (interruptHandler[n])(data); \
+	}
+#endif
 
 // underlying function
 InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler handler, int data);

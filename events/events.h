@@ -10,10 +10,16 @@
 // - USE_INTERRUPT_SERIAL_HANDLER_x
 // - USE_INTERRUPT_TWI_HANDLER_x
 // BEFORE THIS #INCLUSION
+// if TIMER0 is used, it must override default one (used for timing functions)
+// => option -Wl,--allow-multiple-definition is needed or linking fails.
 
 // timer used for events "wait" loops
 #define DEFAULT_EVENTS_TIMER 2
 #define DEFAULT_EVENTS_TIMEOUT 100000L
+
+// timer events are handled with a precision of 1024µs
+// 1024 is one of the timer prescales => will need less timer loops
+#define TIMER_EVENT_PRECISION 1024
 
 #include <ArduinoTools.h>
 
@@ -99,16 +105,23 @@ public:
 	bool unregisterEvent(eventHandler *handler);
 
 	/**
-	 * fire a new event with given type and detail
+	 * Fire a new event with given type and detail.
+	 * Returns false if queue is full
 	 */
-	void fire(eventType type, short detail);
-	void fire(eventType type);
+	bool fire(eventType type, short detail);
+	bool fire(eventType type);
 
 	/**
 	 * to call repeatedly, to handle queued events
 	 */
 	void waitNext();
 	void waitNext(word sleepMode);
+
+	/**
+	 * +1 after each call to waitNext => allow user to know if several successive handlers
+	 * are called from within the same waitNext call.
+	 */
+	int eventLoop;
 
 	Events();
 

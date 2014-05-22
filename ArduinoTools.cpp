@@ -159,6 +159,34 @@ bool disableInputInterrupt(byte input) {
 }
 
 bool enableTimerInterrupt(byte timer, byte mode) {
+#if defined(__AVR_ATmega32U4__)
+	if (timer == 2 || timer > 4) {
+		return false;
+	}
+	if (mode == TIMER_COMPARE_D && timer != 4) {
+		return false;
+	}
+	if (mode == TIMER_COMPARE_C && timer != 1 &&  timer != 3) {
+		return false;
+	}
+#elif defined(__AVR_ATmega2560__)
+	if (timer > 5) {
+		return false;
+	}
+	if (mode == TIMER_COMPARE_C && timer != 1 &&  timer != 3 && timer != 4 && timer != 5) {
+		return false;
+	}
+	if (mode != TIMER_COMPARE_A && mode != TIMER_COMPARE_B && mode != TIMER_COMPARE_C && mode != TIMER_OVERFLOW) {
+		return false;
+	}
+#else
+	if (timer > 2) {
+		return false;
+	}
+	if (mode != TIMER_COMPARE_A && mode != TIMER_COMPARE_B && mode != TIMER_OVERFLOW) {
+		return false;
+	}
+#endif
 	switch(timer) {
 	case 0:
 		TIMSK0 |= (1<<mode);
@@ -166,20 +194,42 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 	case 1:
 		TIMSK1 |= (1<<mode);
 		return true;
+#ifdef TIMSK2
 	case 2:
 		TIMSK2 |= (1<<mode);
 		return true;
-#ifdef TCCR3A
+#endif
+#ifdef TIMSK3
 	case 3:
 		TIMSK3 |= (1<<mode);
 		return true;
 #endif
-#ifdef TCCR4A
+#ifdef TIMSK4
 	case 4:
+		// TODO : if mega32u, mode bits are differents
+#if defined(__AVR_ATmega32U4__)
+		switch(mode) {
+		case TIMER_COMPARE_A:
+			TIMSK4 |= (1<<OCIE4A);
+		break;
+		case TIMER_COMPARE_B:
+			TIMSK4 |= (1<<OCIE4B);
+		break;
+		case TIMER_COMPARE_C:
+			return false;
+		case TIMER_COMPARE_D:
+			TIMSK4 |= (1<<OCIE4D);
+		break;
+		case TIMER_OVERFLOW:
+			TIMSK4 |= (1<<TOIE4);
+		break;
+		}
+#else
 		TIMSK4 |= (1<<mode);
+#endif
 		return true;
 #endif
-#ifdef TCCR5A
+#ifdef TIMSK5
 	case 5:
 		TIMSK5 |= (1<<mode);
 		return true;
@@ -217,26 +267,95 @@ bool disableTimerInterrupt(byte timer, byte mode) {
 	return false;
 }
 
+
+bool setAnalogCompSource(byte source) {
+	if (source == ANALOG_COMP_SOURCE_AIN1) {
+		// disable mux
+		bitClear(ADCSRB, ACME);
+	} else {
+		bitClear(PRR, PRADC);
+#ifdef __AVR_ATmega2560__
+		// set mux
+		bitWrite3(ADMUX, 0, (source - A0));
+		if ((source - A0) & 0x8) {
+			bitSet(ADCSRB, MUX5);
+		} else {
+			bitClear(ADCSRB, MUX5);
+		}
+#elif defined(__AVR_ATmega328P__)
+		if (source > A5) {
+			return false;
+		}
+		bitWrite3(ADMUX, 0, (source - A0));
+#elif defined(__AVR_ATmega32U4__)
+		byte mux;
+		switch(source) {
+		case A0:
+			mux = 7;
+			break;
+		case A1:
+			mux = 6;
+			break;
+		case A2:
+			mux = 5;
+			break;
+		case A3:
+			mux = 4;
+			break;
+		case A4:
+			mux = 1;
+			break;
+		case A5:
+			mux = 0;
+			break;
+		default:
+			return false;
+		}
+		bitWrite3(ADMUX, 0, (source - A0));
+#endif
+		// enable mux + disable adc
+		bitSet(ADCSRB, ACME);
+		bitClear(ADCSRA, ADEN);
+	}
+	return true;
+}
+
+bool setAnalogCompReference(byte ref) {
+	if (ref == ANALOG_COMP_REFERENCE_INTERNAL) {
+		bitClear(ACSR, ACBG);
+	} else {
+#ifdef __AVR_ATmega2560__
+		// no AIN1 pin accessible on Mega
+		return false;
+#else
+		bitSet(ACSR, ACBG);
+#endif
+	}
+	return true;
+}
+
 bool enableAnalogCompInterrupt(byte mode) {
-	byte modeBits = ((mode & ANALOGCOMP_INTERNAL) != 0) ? (1<<ACBG) : 0;
+	byte modeBits = 0;
 
 	// first clear interrupt flag to change mode without side effects, and other used ones
 	// to just have to set usefull ones
-	ACSR &= ~((1 << ACIE) || (1 << ACIS1) || (1 << ACIS0) || (1<<ACBG));
+	bitClear(ACSR, ACIE);
 	// compute ACISx bits
-	switch (mode & ~ANALOGCOMP_INTERNAL) {
+	switch (mode) {
 	case FALLING:
-		modeBits |= 1 << ACIS1;
+		bitWrite2(ACSR, 0, 2);
 		break;
 	case RISING:
-		modeBits |= (1 << ACIS1) | (1 << ACIS0);
+		bitWrite2(ACSR, 0, 3);
 		break;
-	// CHANGE => let to 0
+	default:
+		// CHANGE
+		bitWrite2(ACSR, 0, 0);
+		break;
 	}
-	ACSR |= modeBits;
 	// finally, set AC Interrupt Enable and enable comparator
-	ACSR &= ~(1 << ACD);
-	ACSR |= (1 << ACIE);
+	bitClear(ACSR, ACD);
+	bitSet(ACSR, ACIE);
 	return true;
 }
 bool disableAnalogCompInterrupt() {
@@ -244,9 +363,9 @@ bool disableAnalogCompInterrupt() {
 }
 bool disableAnalogCompInterrupt(bool disableComparator) {
 	// clear AC Interrupt Enable and disable comparator
-	ACSR &= ~(1 << ACIE);
+	bitClear(ACSR, ACIE);
 	if (disableComparator) {
-		ACSR |= 1 << ACD;
+		bitSet(ACSR, ACD);
 	}
 	return true;
 }

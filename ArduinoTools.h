@@ -1,6 +1,20 @@
 /**
  * some defines and methods to handle some low level features like
  * interrupts and timers
+ *
+ * set*Handler functions are correctly implemented if some defines are set :
+ * CALLER MUST DECIDE WHICH KIND OF HANDLERS HE WANTS, BY #DEFINING
+ * ONE OR SEVERAL OF
+ * - USE_INTERRUPT_TIMER_HANDLER_x (must match defaultTimer value)
+ * - USE_INTERRUPT_INPUT_HANDLER_x
+ * - USE_INTERRUPT_ANALAGCOMP_HANDLER
+ * - USE_INTERRUPT_SERIAL_HANDLER_x
+ * - USE_INTERRUPT_TWI_HANDLER_x
+ * BEFORE THIS #INCLUSION
+ *
+ * If TIMER0 is used, it must override default one defined in wiring.c
+ *  (used for millis(), delay() ..)
+ * In this case, option -Wl,--allow-multiple-definition is needed or linking will fail.
  */
 
 #ifndef AVRTOOLS_H
@@ -9,6 +23,36 @@
 #include <Arduino.h>
 #include <avr/io.h>
 #include <avr/sleep.h>
+
+// for debug purpose
+#ifdef ARDUINO_TOOLS_DEBUG
+extern volatile int ISRnum, ISRcalled, ISRlast1, ISRlast2;
+#endif
+
+#ifdef ARDUINO_TOOLS_DEBUG
+	#define LOG(str)  Serial.println(str); Serial.flush();
+	#define LOGd(v) Serial.print(#v "\t: "); Serial.println(v); Serial.flush();
+	#define LOGx(v) Serial.print(#v "\t: 0x"); Serial.println(v, HEX); Serial.flush();
+	#define LOGb(v) Serial.print(#v "\t: 0b"); Serial.println(v, BIN); Serial.flush();
+#else
+	#define LOG(str)
+	#define LOGd(v)
+	#define LOGx(v)
+	#define LOGb(v)
+#endif
+
+/**
+ * How to know which kind of arduino we are compiling for :
+ */
+#if defined(__AVR_ATmega32U4__)
+// it's a Leonardo, Micro or Yun
+#elif defined(__AVR_ATmega328P__)
+// it's a Uno
+#elif defined(__AVR_ATmega2560__)
+// it's a Mega
+#else
+// I don't know ...
+#endif
 
 /**
  * default sleep mode to use
@@ -37,6 +81,12 @@ typedef void (*InterruptHandler)(int data);
 
 #if defined (__AVR_ATmega328P__)
 	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : ((p) == 3) ? 1 : -1)
+#elif defined (__AVR_ATmega32U4__)
+	#define INTERRUPT_FOR_PIN(p) (((p) == 0) ? 2 : \
+			((p) == 1) ? 3 : \
+			((p) == 2) ? 1 : \
+			((p) == 3) ? 0 : \
+			((p) == 7) ? 6 : -1)
 #elif defined (__AVR_ATmega2560__)
 	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : \
 			((p) == 3) ? 1 : \
@@ -56,7 +106,18 @@ typedef void (*InterruptHandler)(int data);
 #endif
 
 /**
+ * bitWrite(dest, bit, value) is defined in arduino.h to fix value of bit "bit" into "dest"
+ * bitWrite2,3,4 do the same with a 2,3,4 bits value, "bit" being lower one
+ * Thus bitWrite4(x, 4, 0xA) with x==0 before implies x to became 0xA0
+ */
+#define bitWrite2(dest, bit, value) (dest) = (((dest) & ~(0x3UL << bit)) | (((value & 0x3UL)) << bit))
+#define bitWrite3(dest, bit, value) (dest) = (((dest) & ~(0x7UL << bit)) | (((value & 0x7UL)) << bit))
+#define bitWrite4(dest, bit, value) (dest) = (((dest) & ~(0xfUL << bit)) | (((value & 0xfUL)) << bit))
+
+
+/**
  * structure to map TCCR* registers to word variables
+ * usefull to change timer/pwm parameters
  */
 typedef union _tccr {
 	word all;
@@ -90,9 +151,17 @@ typedef union _tccr {
 	variable.fields.WGMnL = (wgm) & 0x3;  \
 	variable.fields.WGMnH = (wgm) >> 2
 
+// TOIEx and OCIExx have same values for timers 0 to 5, excepted for leonardo family
+// where timer4 is different, but *ableTimerInterrupt function handle this case
+#define TIMER_OVERFLOW  TOIE0
 #define TIMER_COMPARE_A OCIE0A
 #define TIMER_COMPARE_B OCIE0B
-#define TIMER_OVERFLOW  TOIE0
+#ifdef OCIE1C
+#define TIMER_COMPARE_C OCIE1C
+#endif
+#ifdef OCIE4D
+#define TIMER_COMPARE_D OCIE4D
+#endif
 
 /**
  * Enable given interrupt by setting according registers
@@ -103,8 +172,7 @@ bool enableInputInterrupt(byte input, byte mode);
 // mode = TIMER_COMPARE_A, TIMER_COMPARE_B, TIMER_OVERFLOW
 bool enableTimerInterrupt(byte timer, byte mode);
 bool disableInputInterrupt(byte input);
-#define ANALOGCOMP_INTERNAL 0x80
-// mode = CHANGE, RISING, FALLING and optionnaly OR'ed with ANALOGCOMP_INTERNAL
+// mode = CHANGE, RISING, FALLING
 bool enableAnalogCompInterrupt(byte mode);
 bool enableSerialInterrupt(byte serial);
 bool enableTwiInterrupt(byte twi);
@@ -132,7 +200,40 @@ InterruptHandler setAnalogCompHandler(InterruptHandler handler);
 InterruptHandler setSerialHandler(short serialNumber, InterruptHandler handler);
 InterruptHandler setTwiHandler(short twiNumber, InterruptHandler handler);
 
+#if defined(__AVR_ATmega32U4__)
+	// input only from ADC
+	#define ANALOG_COMP_INPUT -1
+	#define ANALOG_COMP_REFERENCE 7
+#elif defined(__AVR_ATmega328P__)
+	#define ANALOG_COMP_INPUT 7
+	#define ANALOG_COMP_REFERENCE 6
+#elif defined(__AVR_ATmega2560__)
+	#define ANALOG_COMP_INPUT 5
+	// ref only from internal
+	#define ANALOG_COMP_REFERENCE -1
+#else
+#warning unknown hardware
+#endif
+
 #define analogCompValue() ((ACSR & (1 << ACO)) ? HIGH : LOW)
+
+#define ANALOG_COMP_SOURCE_AIN1 255
+
+/**
+ * set analog comparator source to AIN1 pin (depends on hardware) or one of
+ * ADC inputs (A0 to An, n <= 5 excepted for mega, <= 15)
+ */
+bool setAnalogCompSource(byte source);
+
+#define ANALOG_COMP_REFERENCE_AIN0 0
+#define ANALOG_COMP_REFERENCE_INTERNAL 1
+
+/**
+ * set analog comparator reference to AIN0 or internal reference
+ */
+bool setAnalogCompReference(byte ref);
+
+
 /**
  * some defines to have information on number of interrupts kind are available on current target
  */
