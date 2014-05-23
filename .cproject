@@ -227,7 +227,7 @@
 					<folderInfo id="de.innot.avreclipse.configuration.lib.release.215243265.153020112.1809952118." name="/" resourcePath="">
 						<toolChain id="de.innot.avreclipse.toolchain.winavr.lib.release.322778240" name="AVR-GCC Toolchain" superClass="de.innot.avreclipse.toolchain.winavr.lib.release">
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release.1814634598" name="Generate Extended Listing (Source + generated Assembler)" superClass="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release"/>
-							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release.614371550" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release"/>
+							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release.614371550" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release" value="false" valueType="boolean"/>
 							<targetPlatform id="de.innot.avreclipse.targetplatform.winavr.lib.release.1170433075" name="AVR Cross-Target" superClass="de.innot.avreclipse.targetplatform.winavr.lib.release"/>
 							<builder buildPath="${workspace_loc:/ArduinoTools}/Release" id="de.innot.avreclipse.target.builder.winavr.lib.release.1061456753" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.lib.release.1315582680" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.lib.release">
@@ -280,10 +280,7 @@
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="ArduinoLibs;de.innot.avreclipse.configuration.lib.release.985260026.852281844.921102757" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-				<externalSettings containerId="ArduinoCore;de.innot.avreclipse.configuration.app.release.599339463.1512248181.1454224575" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -291,6 +288,9 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Mega"/>
+		<configuration configurationName="Yun"/>
+		<configuration configurationName="Micro"/>
 		<configuration configurationName="Uno">
 			<resource resourceType="PROJECT" workspacePath="/ArduinoTools"/>
 		</configuration>
