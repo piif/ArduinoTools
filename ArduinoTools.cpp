@@ -273,7 +273,11 @@ bool setAnalogCompSource(byte source) {
 		// disable mux
 		bitClear(ADCSRB, ACME);
 	} else {
+#if defined(PRR)
 		bitClear(PRR, PRADC);
+#else
+		bitClear(PRR0, PRADC);
+#endif
 #ifdef __AVR_ATmega2560__
 		// set mux
 		bitWrite3(ADMUX, 0, (source - A0));
@@ -311,7 +315,7 @@ bool setAnalogCompSource(byte source) {
 		default:
 			return false;
 		}
-		bitWrite3(ADMUX, 0, (source - A0));
+		bitWrite3(ADMUX, 0, mux);
 #endif
 		// enable mux + disable adc
 		bitSet(ADCSRB, ACME);
@@ -335,8 +339,6 @@ bool setAnalogCompReference(byte ref) {
 }
 
 bool enableAnalogCompInterrupt(byte mode) {
-	byte modeBits = 0;
-
 	// first clear interrupt flag to change mode without side effects, and other used ones
 	// to just have to set usefull ones
 	bitClear(ACSR, ACIE);

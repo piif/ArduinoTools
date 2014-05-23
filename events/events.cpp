@@ -85,7 +85,7 @@ void Events::waitNext(word sleepMode) {
 	}
 
 	bool found = false;
-	unsigned long next = 0xffffffffL;
+	unsigned long now, next = 0xffffffffL;
 
 	// loop on event queue THEN on timers
 	// but at end of event queue, we may have new items in queue => must loop
@@ -118,7 +118,7 @@ void Events::waitNext(word sleepMode) {
 		// look at expired timer events + compute next time
 		// TODO : must avoid to use millis/micros
 		// => must compute our own time ellapsed since preceding call, using timer values
-		unsigned long now = (millis() * 1000) + (micros() % 1000);
+		now = (millis() * 1000) + (micros() % 1000);
 		next = 0xffffffffL;
 
 		for (int h = 0; h < eventHandlerMax; h++) {
