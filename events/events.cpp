@@ -1,3 +1,4 @@
+#define ARDUINO_TOOLS_DEBUG
 #define NOT_IN_MAIN
 #define USE_INTERRUPT_INPUT_HANDLER
 #include "events.h"
@@ -118,7 +119,7 @@ void Events::waitNext(word sleepMode) {
 		// look at expired timer events + compute next time
 		// TODO : must avoid to use millis/micros
 		// => must compute our own time ellapsed since preceding call, using timer values
-		now = (millis() * 1000) + (micros() % 1000);
+		now = 0;//(millis() * 1000) + (micros() % 1000);
 		next = 0xffffffffL;
 
 		for (int h = 0; h < eventHandlerMax; h++) {

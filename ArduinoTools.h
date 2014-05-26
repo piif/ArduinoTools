@@ -129,11 +129,11 @@ typedef union _tccr {
 
 	struct _fields {
 		// ordered from low bits to high bits
-		byte CSn:3;
-		byte WGMnH:2;
-		byte unused2:3;
-		byte WGMnL:2;
-		byte unused1:2;
+		byte CSn:3;   // Clock Select
+		byte WGMnH:2; // Waveform Generation Mode High bits
+		byte unused:3; // depends on timer
+		byte WGMnL:2; // Waveform Generation Mode Low bits
+		byte COMnC:2; // only for 1,3 on 32u4 + 1,3,4,5 on 2560
 		byte COMnB:2;
 		byte COMnA:2;
 	} fields;

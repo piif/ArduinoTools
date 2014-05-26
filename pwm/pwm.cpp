@@ -20,7 +20,7 @@
  *
 **/
 
-void setPWM(byte pwm, unsigned int icr,
+bool setPWM(byte pwm, unsigned int icr,
 		byte com_a, unsigned int ocr_a,
 		byte com_b, unsigned int ocr_b,
 		byte wgm, byte cs) {
@@ -105,8 +105,100 @@ void setPWM(byte pwm, unsigned int icr,
 		OCR5B = (byte)ocr_b;
 		break;
 #endif
+	default:
+		return false;
 	}
 	SREG = oldSREG;
+	return true;
+}
+
+bool setPWM3(
+		byte pwm, unsigned int icr,
+		byte com_a, unsigned int ocr_a,
+		byte com_b, unsigned int ocr_b,
+		byte com_c, unsigned int ocr_c,
+		byte wgm, byte cs) {
+
+	byte oldSREG;
+	TCCR_REG TCCR;
+
+	switch(pwm) {
+	case 0:
+		READ_TCCR_REG(TCCR, 0);
+		break;
+	case 1:
+		READ_TCCR_REG(TCCR, 1);
+		break;
+#ifdef TCCR2A
+	case 2:
+		READ_TCCR_REG(TCCR, 2);
+		break;
+#endif
+#ifdef TCCR3A
+	case 3:
+		READ_TCCR_REG(TCCR, 3);
+		break;
+#endif
+#ifdef TCCR4A
+	case 4:
+		READ_TCCR_REG(TCCR, 4);
+		break;
+#endif
+#ifdef TCCR5A
+	case 5:
+		READ_TCCR_REG(TCCR, 5);
+		break;
+#endif
+	}
+
+	TCCR.fields.COMnA = com_a;
+	TCCR.fields.COMnB = com_b;
+	TCCR.fields.COMnC = com_c;
+	SET_TCCR_WGM(TCCR, wgm);
+	TCCR.fields.CSn = cs;
+
+	oldSREG = SREG;
+	cli();
+	switch(pwm) {
+#ifdef OCR1C
+	case 1:
+		WRITE_TCCR_REG(TCCR, 1);
+		// set OCR1x AFTER TCCR1x or high byte is forced to 0 !?!?
+		ICR1 = icr;
+		OCR1A = ocr_a;
+		OCR1B = ocr_b;
+		OCR1C = ocr_c;
+		break;
+#endif
+#ifdef OCR3C
+	case 3:
+		WRITE_TCCR_REG(TCCR, 3);
+		OCR3A = (byte)ocr_a;
+		OCR3B = (byte)ocr_b;
+		OCR3C = (byte)ocr_c;
+		break;
+#endif
+#ifdef OCR4C
+	case 4:
+		WRITE_TCCR_REG(TCCR, 4);
+		OCR4A = (byte)ocr_a;
+		OCR4B = (byte)ocr_b;
+		OCR4C = (byte)ocr_c;
+		break;
+#endif
+#ifdef OCR5C
+	case 5:
+		WRITE_TCCR_REG(TCCR, 5);
+		OCR5A = (byte)ocr_a;
+		OCR5B = (byte)ocr_b;
+		OCR5C = (byte)ocr_c;
+		break;
+#endif
+	default:
+		return false;
+	}
+	SREG = oldSREG;
+	return true;
 }
 
 void setPWMmode(

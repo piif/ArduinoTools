@@ -52,6 +52,13 @@
 #define WGM_2_PHASE_MAX  1
 #define WGM_2_PHASE_OCRA 5
 
+// TODO : verify values for each target + add 4&5 for mega
+#define WGM_3_FAST_MAX   0
+#define WGM_3_FAST_ICR   14
+#define WGM_3_FAST_OCRA  15
+#define WGM_3_PHASE_ICR  8
+#define WGM_3_PHASE_OCRA 9
+
 // Arduino output associated with PWM outs
 #if defined __AVR_ATmega2560__
 
@@ -103,17 +110,25 @@
 // clock prescalers
 // TODO verify values for 2560 and 32u4
 
-#define PWM0_PRESCALER_1    1
-#define PWM0_PRESCALER_8    2
-#define PWM0_PRESCALER_64   3
-#define PWM0_PRESCALER_256  4
-#define PWM0_PRESCALER_1024 5
+// true for timer 0, 1, 3, 4, 5 excepted timer4 on 32u4
+#define PWMx_PRESCALER_1    1
+#define PWMx_PRESCALER_8    2
+#define PWMx_PRESCALER_64   3
+#define PWMx_PRESCALER_256  4
+#define PWMx_PRESCALER_1024 5
 
-#define PWM1_PRESCALER_1    1
-#define PWM1_PRESCALER_8    2
-#define PWM1_PRESCALER_64   3
-#define PWM1_PRESCALER_256  4
-#define PWM1_PRESCALER_1024 5
+// for compatibility
+#define PWM0_PRESCALER_1    PWMx_PRESCALER_1
+#define PWM0_PRESCALER_8    PWMx_PRESCALER_8
+#define PWM0_PRESCALER_64   PWMx_PRESCALER_64
+#define PWM0_PRESCALER_256  PWMx_PRESCALER_256
+#define PWM0_PRESCALER_1024 PWMx_PRESCALER_1024
+
+#define PWM1_PRESCALER_1    PWMx_PRESCALER_1
+#define PWM1_PRESCALER_8    PWMx_PRESCALER_8
+#define PWM1_PRESCALER_64   PWMx_PRESCALER_64
+#define PWM1_PRESCALER_256  PWMx_PRESCALER_256
+#define PWM1_PRESCALER_1024 PWMx_PRESCALER_1024
 
 #define PWM2_PRESCALER_1    1
 #define PWM2_PRESCALER_8    2
@@ -124,10 +139,18 @@
 #define PWM2_PRESCALER_1024 7
 
 // "low level" version
-extern void setPWM(
+extern bool setPWM(
 		byte pwm, unsigned int icr,
 		byte com_a, unsigned int ocr_a,
 		byte com_b, unsigned int ocr_b,
+		byte wgm, byte cs);
+
+// for those with OCRnC output
+extern bool setPWM3(
+		byte pwm, unsigned int icr,
+		byte com_a, unsigned int ocr_a,
+		byte com_b, unsigned int ocr_b,
+		byte com_c, unsigned int ocr_c,
 		byte wgm, byte cs);
 
 extern void setPWMmode(
