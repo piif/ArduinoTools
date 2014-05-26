@@ -1,4 +1,3 @@
-#define ARDUINO_TOOLS_DEBUG
 #define NOT_IN_MAIN
 #define USE_INTERRUPT_INPUT_HANDLER
 #include "events.h"
