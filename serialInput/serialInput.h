@@ -28,6 +28,7 @@ typedef struct inputItem {
  */
 int registerInput(int nbItems, InputItem *items);
 
+// TODO : add a version with Serial as argument
 /**
  * function to call to handle serial input
  */
