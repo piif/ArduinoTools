@@ -75,6 +75,10 @@ void parseInput(byte *str, const int len) {
 }
 
 void handleInput() {
+	handleInput(true);
+}
+
+void handleInput(bool echo) {
 	// read data if any
 	// TODO : handle this by interruptions ?
 	int avail = Serial.available();
@@ -84,7 +88,9 @@ void handleInput() {
 	// TODO : consider readBytes will work since available was called just before ...
 	while (avail) {
 		buffer[current] = Serial.read();
-		Serial.print((char)buffer[current]);
+		if (echo) {
+			Serial.print((char)buffer[current]);
+		}
 		current++;
 		avail--;
 	}

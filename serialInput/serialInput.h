@@ -32,5 +32,9 @@ int registerInput(int nbItems, InputItem *items);
  * function to call to handle serial input
  */
 void handleInput();
+/**
+ * same function with argument to specify if input must be echo'ed back
+ */
+void handleInput(bool echo);
 
 #endif
