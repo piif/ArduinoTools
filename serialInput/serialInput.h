@@ -5,6 +5,7 @@
 #define SERIAL_INPUT_H 1
 
 #include <Arduino.h>
+#include <Stream.h>
 
 #define SERIAL_INPUT_MAX_LEN 50
 
@@ -28,11 +29,28 @@ typedef struct inputItem {
  */
 int registerInput(int nbItems, InputItem *items);
 
+/**
+ * When a callback is called, contains Stream from which this callback was thrown
+ */
+extern Stream *lastInputChannel;
+
 // TODO : add a version with Serial as argument
+
+/**
+ * function to call to handle serial input
+ */
+void handleInput(Stream &channel);
+
+/**
+ * same function with argument to specify if input must be echo'ed back
+ */
+void handleInput(Stream &channel, bool echo);
+
 /**
  * function to call to handle serial input
  */
 void handleInput();
+
 /**
  * same function with argument to specify if input must be echo'ed back
  */

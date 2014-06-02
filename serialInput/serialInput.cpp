@@ -11,6 +11,8 @@ int current = 0;
 int nbItems = 0;
 InputItem *items;
 
+Stream *lastInputChannel;
+
 int registerInput(int _nbItems, InputItem *_items) {
 	nbItems = _nbItems;
 	items = _items;
@@ -75,21 +77,29 @@ void parseInput(byte *str, const int len) {
 }
 
 void handleInput() {
-	handleInput(true);
+	handleInput(Serial, true);
+}
+
+void handleInput(Stream &channel) {
+	handleInput(channel, true);
 }
 
 void handleInput(bool echo) {
+	handleInput(Serial, echo);
+}
+
+void handleInput(Stream &channel, bool echo) {
 	// read data if any
 	// TODO : handle this by interruptions ?
-	int avail = Serial.available();
+	int avail = channel.available();
 	if (avail > SERIAL_INPUT_MAX_LEN - current) {
 		avail = SERIAL_INPUT_MAX_LEN - current;
 	}
 	// TODO : consider readBytes will work since available was called just before ...
 	while (avail) {
-		buffer[current] = Serial.read();
+		buffer[current] = channel.read();
 		if (echo) {
-			Serial.print((char)buffer[current]);
+			channel.print((char)buffer[current]);
 		}
 		current++;
 		avail--;
@@ -104,6 +114,7 @@ void handleInput(bool echo) {
 	// handle input
 	for (i = 0; i < current; i++) {
 		if (buffer[i] == '\n' || buffer[i] == '\r') {
+			lastInputChannel = &channel;
 			parseInput(buffer, i);
 			// skip newlines
 			do {
