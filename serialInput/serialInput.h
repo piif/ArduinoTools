@@ -9,9 +9,9 @@
 
 #define SERIAL_INPUT_MAX_LEN 50
 
-typedef void (*destFuncByte)(const byte value);
-typedef void (*destFuncInt)(const int value);
-typedef void (*destFuncString)(const char *s);
+typedef void (*destFuncByte)(const byte value, Stream &channel);
+typedef void (*destFuncInt)(const int value, Stream &channel);
+typedef void (*destFuncString)(const char *s, Stream &channel);
 
 typedef struct inputItem {
 	// char to react to
@@ -28,13 +28,6 @@ typedef struct inputItem {
  * function to call to register a list of commands
  */
 int registerInput(int nbItems, InputItem *items);
-
-/**
- * When a callback is called, contains Stream from which this callback was thrown
- */
-extern Stream *lastInputChannel;
-
-// TODO : add a version with Serial as argument
 
 /**
  * function to call to handle serial input

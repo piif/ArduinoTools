@@ -11,8 +11,6 @@ int current = 0;
 int nbItems = 0;
 InputItem *items;
 
-Stream *lastInputChannel;
-
 int registerInput(int _nbItems, InputItem *_items) {
 	nbItems = _nbItems;
 	items = _items;
@@ -26,17 +24,17 @@ int convChar(char c) {
 	return 0;
 }
 
-void parseInput(byte *str, const int len) {
+void parseInput(byte *str, const int len, Stream &channel) {
 	for (int i = 0; i < nbItems; i++) {
 		if (items[i].prefix == str[0]) {
 			// command found
-			Serial.print("\nFound command '");
-			Serial.print((char)str[0]);
+			channel.print("\nFound command '");
+			channel.print((char)str[0]);
 			if (len > 1) {
-				Serial.print("', '");
-				Serial.write((str + 1), len - 1);
+				channel.print("', '");
+				channel.write((str + 1), len - 1);
 			}
-			Serial.println("'.");
+			channel.println("'.");
 
 			int value = 0, b = 10, s = 1;
 			for (int j = 1; j < len; j++) {
@@ -51,12 +49,12 @@ void parseInput(byte *str, const int len) {
 			value = value * s;
 
 			if (items[i].type == 'f' || items[i].type == 'I') {
-				((destFuncInt)(items[i].destination))(value);
+				((destFuncInt)(items[i].destination))(value, channel);
 			} else if (items[i].type == 'B') {
-				((destFuncByte)(items[i].destination))((byte)value);
+				((destFuncByte)(items[i].destination))((byte)value, channel);
 			} else if (items[i].type == 'S') {
 				str[len] = '\0';
-				((destFuncString)(items[i].destination))((const char *)(str + 1));
+				((destFuncString)(items[i].destination))((const char *)(str + 1), channel);
 			} else if (items[i].type == 'b') {
 				*((byte *)(items[i].destination)) = value;
 			} else if (items[i].type == 'i') {
@@ -71,9 +69,9 @@ void parseInput(byte *str, const int len) {
 		}
 	}
 	// unknown command.
-	Serial.print("!! Unknown command '");
-	Serial.print(str[0], DEC);
-	Serial.println("'. ignored.");
+	channel.print("!! Unknown command '");
+	channel.print(str[0], DEC);
+	channel.println("'. ignored.");
 }
 
 void handleInput() {
@@ -114,8 +112,7 @@ void handleInput(Stream &channel, bool echo) {
 	// handle input
 	for (i = 0; i < current; i++) {
 		if (buffer[i] == '\n' || buffer[i] == '\r') {
-			lastInputChannel = &channel;
-			parseInput(buffer, i);
+			parseInput(buffer, i, channel);
 			// skip newlines
 			do {
 				i++;
