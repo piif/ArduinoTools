@@ -5,12 +5,13 @@
 #define SERIAL_INPUT_H 1
 
 #include <Arduino.h>
+#include <Stream.h>
 
 #define SERIAL_INPUT_MAX_LEN 50
 
-typedef void (*destFuncByte)(const byte value);
-typedef void (*destFuncInt)(const int value);
-typedef void (*destFuncString)(const char *s);
+typedef void (*destFuncByte)(const byte value, Stream &channel);
+typedef void (*destFuncInt)(const int value, Stream &channel);
+typedef void (*destFuncString)(const char *s, Stream &channel);
 
 typedef struct inputItem {
 	// char to react to
@@ -28,11 +29,21 @@ typedef struct inputItem {
  */
 int registerInput(int nbItems, InputItem *items);
 
-// TODO : add a version with Serial as argument
+/**
+ * function to call to handle serial input
+ */
+void handleInput(Stream &channel);
+
+/**
+ * same function with argument to specify if input must be echo'ed back
+ */
+void handleInput(Stream &channel, bool echo);
+
 /**
  * function to call to handle serial input
  */
 void handleInput();
+
 /**
  * same function with argument to specify if input must be echo'ed back
  */
