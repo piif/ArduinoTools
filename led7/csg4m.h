@@ -28,6 +28,7 @@ public:
 protected:
 	void prepareDisplay(byte pos, byte segments);
 	void updateDisplay();
+	byte prepareForSegment(byte s);
 
 private:
 	// current mask to send to display

@@ -16,5 +16,8 @@ public:
 protected:
 	void prepareDisplay(byte pos, byte segments);
 	void updateDisplay();
+	word prepareForSegment(byte s);
+	word prepareForPos(word map, byte pos);
+	void doSend(word w);
 };
 #endif

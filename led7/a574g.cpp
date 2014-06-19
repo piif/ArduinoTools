@@ -95,7 +95,7 @@ A574g::A574g() : Led7() {
 	pinMode(Sp, OUTPUT);
 }
 
-word prepareForSegment(byte s) {
+word A574g::prepareForSegment(byte s) {
 	// start with all segments off (HIGH), digit bit off (LOW),
 	// other bits = 0
 	int res = ALL_OFF;
@@ -114,7 +114,7 @@ word prepareForSegment(byte s) {
 /**
  * modify given segment map to force it's display position
  */
-word prepareForPos(word map, byte pos) {
+word A574g::prepareForPos(word map, byte pos) {
 	switch(pos) {
 	case 0: return (map & POSITION_MASK) | (1<<D0);
 	case 1: return (map & POSITION_MASK) | (1<<D1);
@@ -130,12 +130,13 @@ void A574g::prepareDisplay(byte pos, byte segments) {
 void A574g::updateDisplay() {
 	// nothing. job will be done by send()
 }
-volatile short digit = 0;
 
-void doSend(word w) {
+void A574g::doSend(word w) {
 	PORTB = (PORTB & 0xC0) | (w >> 8);
 	PORTD = (PORTD & 0x02) |  w;
 }
+
+volatile short digit = 0;
 
 void A574g::send() {
 	Led7::send();

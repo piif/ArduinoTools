@@ -32,7 +32,7 @@ CSG4M::CSG4M(byte address) : Led7() {
 	toSend = (byte *)malloc(CSG4M_NB_DIGITS);
 }
 
-byte prepareForSegment(byte s) {
+byte CSG4M::prepareForSegment(byte s) {
 	int res = 0;
 	if (s & (1 << 7)) res |= St;
 	if (s & (1 << 6)) res |= SL;
