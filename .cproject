@@ -5,10 +5,10 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="de.innot.avreclipse.configuration.lib.release.215243265" moduleId="org.eclipse.cdt.core.settings" name="Uno">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -18,7 +18,7 @@
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release.683010507" name="Generate Extended Listing (Source + generated Assembler)" superClass="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release" value="true" valueType="boolean"/>
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release.1620094375" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release" value="false" valueType="boolean"/>
 							<targetPlatform id="de.innot.avreclipse.targetplatform.winavr.lib.release.83961911" name="AVR Cross-Target" superClass="de.innot.avreclipse.targetplatform.winavr.lib.release"/>
-							<builder buildPath="${workspace_loc:/ArduinoTools}/Release" id="de.innot.avreclipse.target.builder.winavr.lib.release.2027823580" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
+							<builder arguments="TARGET=${ConfigName}" buildPath="${workspace_loc:/${ProjName}}" command="make" id="de.innot.avreclipse.target.builder.winavr.lib.release.2027823580" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.lib.release.1226314485" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.lib.release">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.1913102849" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level" value="de.innot.avreclipse.assembler.option.debug.level.none" valueType="enumerated"/>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.1496386465" superClass="de.innot.avreclipse.tool.assembler.input"/>
@@ -74,10 +74,10 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="de.innot.avreclipse.configuration.lib.release.215243265.1455793188" moduleId="org.eclipse.cdt.core.settings" name="Mega">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -87,7 +87,7 @@
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release.1781548066" name="Generate Extended Listing (Source + generated Assembler)" superClass="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release"/>
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release.1240111991" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release" value="false" valueType="boolean"/>
 							<targetPlatform id="de.innot.avreclipse.targetplatform.winavr.lib.release.253559347" name="AVR Cross-Target" superClass="de.innot.avreclipse.targetplatform.winavr.lib.release"/>
-							<builder buildPath="${workspace_loc:/ArduinoTools}/Release" id="de.innot.avreclipse.target.builder.winavr.lib.release.803461398" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
+							<builder arguments="TARGET=${ConfigName}" buildPath="${workspace_loc:/${ProjName}}" command="make" id="de.innot.avreclipse.target.builder.winavr.lib.release.803461398" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.lib.release.1356598249" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.lib.release">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.735580012" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level" value="de.innot.avreclipse.assembler.option.debug.level.none" valueType="enumerated"/>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.166730113" superClass="de.innot.avreclipse.tool.assembler.input"/>
@@ -143,10 +143,10 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="de.innot.avreclipse.configuration.lib.release.215243265.153020112" moduleId="org.eclipse.cdt.core.settings" name="Micro">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -156,7 +156,7 @@
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release.928095259" name="Generate Extended Listing (Source + generated Assembler)" superClass="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release"/>
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release.218149127" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release" value="false" valueType="boolean"/>
 							<targetPlatform id="de.innot.avreclipse.targetplatform.winavr.lib.release.2118058234" name="AVR Cross-Target" superClass="de.innot.avreclipse.targetplatform.winavr.lib.release"/>
-							<builder buildPath="${workspace_loc:/ArduinoTools}/Release" id="de.innot.avreclipse.target.builder.winavr.lib.release.1847156041" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
+							<builder arguments="TARGET=${ConfigName}" buildPath="${workspace_loc:/${ProjName}}" command="make" id="de.innot.avreclipse.target.builder.winavr.lib.release.1847156041" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.lib.release.1344011291" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.lib.release">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.689060238" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level" value="de.innot.avreclipse.assembler.option.debug.level.none" valueType="enumerated"/>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.1582706950" superClass="de.innot.avreclipse.tool.assembler.input"/>
@@ -216,10 +216,10 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="de.innot.avreclipse.configuration.lib.release.215243265.153020112.1809952118" moduleId="org.eclipse.cdt.core.settings" name="Yun">
 				<externalSettings/>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -229,7 +229,7 @@
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release.1814634598" name="Generate Extended Listing (Source + generated Assembler)" superClass="de.innot.avreclipse.toolchain.options.toolchain.objdump.lib.release"/>
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release.614371550" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.lib.release" value="false" valueType="boolean"/>
 							<targetPlatform id="de.innot.avreclipse.targetplatform.winavr.lib.release.1170433075" name="AVR Cross-Target" superClass="de.innot.avreclipse.targetplatform.winavr.lib.release"/>
-							<builder buildPath="${workspace_loc:/ArduinoTools}/Release" id="de.innot.avreclipse.target.builder.winavr.lib.release.1061456753" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
+							<builder arguments="TARGET=${ConfigName}" buildPath="${workspace_loc:/${ProjName}}" command="make" id="de.innot.avreclipse.target.builder.winavr.lib.release.1061456753" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.lib.release"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.lib.release.1315582680" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.lib.release">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.1448745344" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level" value="de.innot.avreclipse.assembler.option.debug.level.none" valueType="enumerated"/>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.363902921" superClass="de.innot.avreclipse.tool.assembler.input"/>
