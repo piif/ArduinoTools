@@ -8,7 +8,7 @@ CORE_DIR := ${PROJECT_DIR}../ArduinoCore/
 export EXCLUDE_DIRS := makePolice
 
 # other arduino librairies project pathes this project depends on
-export DEPENDENCIES := ${CORE_DIR} ${PROJECT_DIR}../ArduinoLibs/
+export DEPENDENCIES := ${CORE_DIR}../ArduinoLibs/
 
 # generate assembler source code also
 export WITH_ASSEMBLY := yes
@@ -26,9 +26,17 @@ export WITH_UPLOAD := no
 #export UPLOAD_DEVICE := /dev/ttyACM0
 
 # if different of containing dir
-export LIB_NAME := 
+#export LIB_NAME := 
 # TODO : add a "if" on TARGET to launch on this target, or for each known one
 
-# call MakefileLib for a utilities library or MakefileBin for a program
-all:
-	${MAKE} -f ${CORE_DIR}etc/lib.makefile
+# call lib.makefile for a utilities library or bin.makefile for a program
+all upload console:
+	${MAKE} -f ${CORE_DIR}etc/lib.makefile $@
+
+clean:
+ifeq (${TARGET},)
+	rm -rf ${PROJECT_DIR}target/*
+endif
+ifneq (${TARGET},)
+	rm -rf ${PROJECT_DIR}target/${TARGET}
+endif
