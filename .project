@@ -3,6 +3,8 @@
 	<name>ArduinoTools</name>
 	<comment></comment>
 	<projects>
+		<project>ArduinoLibs</project>
+		<project>ArduinoCore</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
