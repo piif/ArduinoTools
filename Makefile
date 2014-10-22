@@ -23,15 +23,21 @@ export WITH_PRINT_SIZE := no
 export WITH_UPLOAD := no
 # where to upload
 # TODO : try to auto detect with lsusb + /proc exploration
-#export UPLOAD_DEVICE := /dev/ttyACM0
+export UPLOAD_DEVICE := /dev/ttyACM0
 
 # if different of containing dir
 #export LIB_NAME := 
 # TODO : add a "if" on TARGET to launch on this target, or for each known one
 
 # call lib.makefile for a utilities library or bin.makefile for a program
-all upload console:
+all:
 	${MAKE} -f ${CORE_DIR}etc/lib.makefile $@
+	
+upload console:
+	${MAKE} \
+		DEPENDENCIES="${DEPENDENCIES} ${CORE_DIR}../ArduinoTools/" \
+		-f ${CORE_DIR}etc/bin.makefile $@
+.PHONY: examples
 
 clean:
 ifeq (${TARGET},)
