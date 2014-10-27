@@ -1,10 +1,10 @@
-#define FROM_STRIP_C
 #include "strip.h"
 
 Color *strip;
-byte *raw;
-int stripLen;
-int rawLen;
+
+static byte *raw = NULL;
+static int stripLen;
+static int rawLen;
 
 const volatile byte *port;
 byte pinMask;
@@ -15,6 +15,9 @@ void stripInit(int len, byte pin) {
 
 	stripLen = len;
 	rawLen = stripLen * 3;
+	if (raw != NULL) {
+		free(raw);
+	}
 	raw = (byte *)malloc(rawLen);
     memset(raw, 0, rawLen);
 	strip = (Color *)raw;
@@ -49,20 +52,21 @@ byte stripGetH(int position) {
 // TODO : compare to http://fr.wikipedia.org/wiki/Cercle_chromatique
 
 void HLtoRGB(byte h, byte l, Color *c) {
-	if(h == 0) {
+	int hh = h, ll = l;
+	if (h == 0) {
 		c->r = 0; c->g = 0; c->b = 0;
 	} else if (h <= 85) {
-		c->r = (h*3 * l) >> 8;
-		c->g = ((255 - h*3) * l) >> 8;
+		c->r = (hh*3 * ll) >> 8;
+		c->g = ((255 - hh*3) * ll) >> 8;
 		c->b = 0;
 	} else if (h <= 170) {
-		c->r = ((255 - h*3) * l) >> 8;
+		c->r = ((255 - (hh-85)*3) * ll) >> 8;
 		c->g = 0;
-		c->b = (h*3 * l) >> 8;
+		c->b = ((hh-85)*3 * ll) >> 8;
 	} else {
 		c->r = 0;
-		c->g = (h*3 * l) >> 8;
-		c->b = ((255 - h*3) * l) >> 8;
+		c->g = ((hh-170)*3 * ll) >> 8;
+		c->b = ((255 - (hh-170)*3) * ll) >> 8;
 	}
 }
 
