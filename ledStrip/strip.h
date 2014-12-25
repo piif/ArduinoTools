@@ -10,6 +10,9 @@
  *   fields in color struct)
  */
 
+#ifndef LEDSTRIP_STRIP_H
+#define LEDSTRIP_STRIP_H
+
 #include <Arduino.h>
 
 typedef struct _color {
@@ -28,6 +31,7 @@ Color stripGetColor(int position);
 byte stripGetH(int position);
 
 void stripAll(Color c);
+void stripAll(byte r, byte g, byte b);
 void stripOff();
 
 void stripUpdate();
@@ -37,3 +41,5 @@ void HLtoRGB(byte h, byte l, Color *c);
 byte RGBtoH(Color c);
 
 extern Color *strip;
+
+#endif
