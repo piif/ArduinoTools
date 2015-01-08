@@ -2,20 +2,19 @@
 	#include <Arduino.h>
 	// other includes with full pathes
 	// example : #include "led7/led7.h"
+	#include <ledStrip/strip.h>
 #else
 	// other includes with short pathes
 	// example : #include "led7.h"
+	#include <strip.h>
 #endif
 
 #ifndef DEFAULT_BAUDRATE
 	#define DEFAULT_BAUDRATE 115200
 #endif
 
-#define STRIP_PIN 8
+#define STRIP_PIN A0
 #define STRIP_LEN 60
-#include <ledStrip/strip.h>
-
-
 
 void setup(void) {
 	Serial.begin(DEFAULT_BAUDRATE);

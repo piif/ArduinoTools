@@ -107,7 +107,14 @@ void stripAll(Color c) {
 		strip[p].r = c.r;
 		strip[p].g = c.g;
 		strip[p].b = c.b;
-
+	}
+    stripUpdate();
+}
+void stripAll(byte r, byte g, byte b) {
+	for (int p = 0; p < stripLen; p++) {
+		strip[p].r = r;
+		strip[p].g = g;
+		strip[p].b = b;
 	}
     stripUpdate();
 }
