@@ -93,18 +93,12 @@ typedef void (*InterruptHandler)(int data);
 			((p) == 3) ? 0 : \
 			((p) == 7) ? 6 : -1)
 #elif defined (__AVR_ATmega2560__)
-	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : \
-			((p) == 3) ? 1 : \
-			((p) == 21) ? 2 : \
-			((p) == 20) ? 3 : \
-			((p) == 19) ? 4 : \
-			((p) == 18) ? 5 : -1)
-#elif defined (__AVR_ATmega32U4__)
-	#define INTERRUPT_FOR_PIN(p) (((p) == 0) ? 2 : \
-			((p) == 1) ? 3 : \
-			((p) == 2) ? 1 : \
-			((p) == 3) ? 0 : \
-			((p) == 7) ? 6 : -1)
+	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 4 : \
+			((p) == 3) ? 5 : \
+			((p) == 18) ? 3 : \
+			((p) == 19) ? 2 : \
+			((p) == 20) ? 1 : \
+			((p) == 21) ? 0 : -1)
 #else
 	#define INTERRUPT_FOR_PIN(p) (-1)
 	#warning variant not implemented
