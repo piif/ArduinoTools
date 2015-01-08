@@ -125,13 +125,14 @@ public:
 
 	Events();
 
+	volatile byte queueSize;
+
 private:
 	byte defaultTimer;
 	unsigned long defaultTimeout;
 
 	byte eventHandlerMax;
 	eventHandler *handlers;
-	volatile byte queueSize;
 	byte *eventQueueTypes;
 	short *eventQueueDetails;
 
