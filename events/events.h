@@ -125,6 +125,8 @@ public:
 
 	Events();
 
+	void dump(Stream &s);
+
 	volatile byte queueSize;
 
 private:

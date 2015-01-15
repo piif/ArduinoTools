@@ -1,5 +1,4 @@
 #define NOT_IN_MAIN
-#define USE_INTERRUPT_INPUT_HANDLER
 #include "events.h"
 #include "delayIdle.h"
 
@@ -85,11 +84,11 @@ void Events::waitNext(word sleepMode) {
 	}
 
 	bool found = false;
-	unsigned long now, next = 0xffffffffL;
+	unsigned long now = 0, next = 0xffffffffL;
 
 	// loop on event queue THEN on timers
 	// but at end of event queue, we may have new items in queue => must loop
-	while (queueSize > 0) {
+	do {
 		// for each fired events, call callback
 		for (int q = 0; q < queueSize; q++) {
 			for (int h = 0; h < eventHandlerMax; h++) {
@@ -113,12 +112,14 @@ void Events::waitNext(word sleepMode) {
 				}
 			}
 		}
+		// if a handler fired an event in queue, loop will continue on it
+		// => here, we can empty it safely
 		queueSize = 0;
 
 		// look at expired timer events + compute next time
 		// TODO : must avoid to use millis/micros
-		// => must compute our own time ellapsed since preceding call, using timer values
-		now = 0;//(millis() * 1000) + (micros() % 1000);
+		// => must compute our own time elapsed since preceding call, using timer values
+		now = (millis() * 1000) + (micros() % 1000);
 		next = 0xffffffffL;
 
 		for (int h = 0; h < eventHandlerMax; h++) {
@@ -127,15 +128,20 @@ void Events::waitNext(word sleepMode) {
 			if (hdl->type == event_timer) {
 				// is it expired ? => handle
 				if (hdl->timerSpec.next <= now + TIMER_EVENT_PRECISION) {
-					hdl->callback(-1, hdl->data);
+					hdl->callback(hdl->timerSpec.count - 1, hdl->data);
 					if (hdl->timerSpec.count == 1) {
+						// last timer iteration => remove it
 						unregisterEvent(hdl);
+						hdl->timerSpec.next  = 0xffffffffL;
 					} else {
 						if (hdl->timerSpec.count > 0) {
+							// remaining iterations => just update counter
 							hdl->timerSpec.count--;
 						}
+						// infinite iterations, or remaining ones => compute next time
 						do {
 							hdl->timerSpec.next += hdl->timerSpec.delay * 1000;
+							// loop over iterations in case we missed some
 						} while(hdl->timerSpec.next < now + TIMER_EVENT_PRECISION);
 					}
 				}
@@ -146,7 +152,8 @@ void Events::waitNext(word sleepMode) {
 				}
 			}
 		}
-	}
+		// here, timer handler having queued new events must be handled => loop
+	} while (queueSize > 0);
 
 	if (!found) {
 		if (defaultTimeout == 0) {
@@ -170,6 +177,44 @@ void Events::waitNext(word sleepMode) {
 
 	analogCompAlready = false;
 	eventLoop++;
+}
+
+void Events::dump(Stream &s) {
+	for (int q = 0; q < queueSize; q++) {
+		s.print("q["); s.print(q); s.print("] = ");
+		s.print(eventQueueTypes[q]); s.print(" / ");; s.println(eventQueueDetails[q]);
+	}
+	for (int h = 0; h < eventHandlerMax; h++) {
+		eventHandler *hdl = &(handlers[h]);
+		s.print("h["); s.print(h); s.print(" ("); s.print((int)hdl); s.print(")] = ");
+		if (hdl->type == event_free) {
+			s.println("-");
+		} else {
+			s.print(hdl->type); s.print(" / "); s.print(hdl->id); s.print(" / "); s.println((int)hdl->callback);
+		}
+		switch(hdl->type) {
+		case event_input:
+			s.print(" input: pin ");
+			s.print(hdl->inputSpec.pin); s.print(" / int "); s.print(hdl->inputSpec.interrupt); s.print(" / mode "); s.println(hdl->inputSpec.mode);
+			break;
+		case event_timer:
+			s.print(" timer: count ");
+			s.print(hdl->timerSpec.count); s.print(" / delay "); s.print(hdl->timerSpec.delay); s.print(" / next "); s.println(hdl->timerSpec.next);
+			break;
+		case event_analogcomp:
+			s.print(" analog: mode ");
+			s.println(hdl->analogCompSpec.mode);
+			break;
+		case event_serial:
+			s.println(" serial: Not Implemented ");
+			break;
+		case event_twi:
+			s.println(" twi: Not Implemented ");
+			break;
+		case event_free:
+			break;
+		}
+	}
 }
 
 Events::eventHandler *Events::registerEvent(Events::eventType type, Events::eventCallback callback, void *data) {
@@ -198,7 +243,7 @@ Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Even
 	}
 
 	result->timerSpec.delay = ms;
-	result->timerSpec.next = 0; //(millis() + ms) * 1000 + micros();
+	result->timerSpec.next = (millis() + ms) * 1000 + (micros() % 1000);
 	result->timerSpec.count = count;
 
 	// TODO : update global delay if empty or if "next" is before
