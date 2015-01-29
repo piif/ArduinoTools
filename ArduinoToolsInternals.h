@@ -67,7 +67,6 @@ InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler han
 		return 0;
 	}
 #endif
-
 #if defined(USE_INTERRUPT_TIMER_HANDLER)
 	#define _INTERRUPTS_FIRST_TIMER __DELTA_1
 
@@ -78,16 +77,32 @@ InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler han
 		_set_ISR(TIMER1_OVF_vect, _INTERRUPTS_FIRST_TIMER+1, 1)
 	#endif
 	#if defined(USE_INTERRUPT_TIMER_HANDLER_2)
+		#if !defined(__AVR_ATmega32U4__)
 		_set_ISR(TIMER2_OVF_vect, _INTERRUPTS_FIRST_TIMER+2, 2)
+		#else
+			#error Cannot use Timer2 on 32u4 processor
+		#endif
 	#endif
 	#if defined(TIMER3_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_2)
+		#if defined(TCCR3A)
 		_set_ISR(TIMER3_OVF_vect, _INTERRUPTS_FIRST_TIMER+3, 3)
+		#else
+			#error Cannot use Timer3
+		#endif
 	#endif
 	#if defined(TIMER4_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_4)
+		#if defined(TCCR4A)
 		_set_ISR(TIMER4_OVF_vect, _INTERRUPTS_FIRST_TIMER+4, 4)
+		#else
+			#error Cannot use Timer4
+		#endif
 	#endif
 	#if defined(TIMER5_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_5)
+		#if defined(TCCR5A)
 		_set_ISR(TIMER5_OVF_vect, _INTERRUPTS_FIRST_TIMER+5, 5)
+		#else
+			#error Cannot use Timer5
+		#endif
 	#endif
 
 	#define __DELTA_2 _INTERRUPTS_FIRST_TIMER + _INTERRUPTS_TIMER_TOTAL

@@ -23,7 +23,7 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool
 	// compute better prescale
 	byte prescale;
 	if (timer == 2) {
-		if (ticks % 1024 == 0) {
+		if (ticks % 1024 == 0) { // TODO : does compiler generates & 1023 == 0 ?
 			ticks /= 1024;
 			prescale = PWM2_PRESCALER_1024;
 		} else if (ticks % 256 == 0) {
@@ -44,6 +44,54 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool
 		} else {
 			prescale = PWM2_PRESCALER_1;
 		}
+#if defined __AVR_ATmega32U4__
+	} else if (timer == 4) {
+		if (ticks % 16384 == 0) {
+			ticks /= 16384;
+			prescale = PWM4_PRESCALER_16384;
+		} else if (ticks % 8192 == 0) {
+			ticks /= 8192;
+			prescale = PWM4_PRESCALER_8192;
+		} else if (ticks % 4096 == 0) {
+			ticks /= 4096;
+			prescale = PWM4_PRESCALER_4096;
+		} else if (ticks % 2048 == 0) {
+			ticks /= 2048;
+			prescale = PWM4_PRESCALER_2048;
+		} else if (ticks % 1024 == 0) {
+			ticks /= 1024;
+			prescale = PWM4_PRESCALER_1024;
+		} else if (ticks % 512 == 0) {
+			ticks /= 512;
+			prescale = PWM4_PRESCALER_512;
+		} else if (ticks % 256 == 0) {
+			ticks /= 256;
+			prescale = PWM4_PRESCALER_256;
+		} else if (ticks % 128 == 0) {
+			ticks /= 128;
+			prescale = PWM4_PRESCALER_128;
+		} else if (ticks % 64 == 0) {
+			ticks /= 64;
+			prescale = PWM4_PRESCALER_64;
+		} else if (ticks % 32 == 0) {
+			ticks /= 32;
+			prescale = PWM4_PRESCALER_32;
+		} else if (ticks % 16 == 0) {
+			ticks /= 16;
+			prescale = PWM4_PRESCALER_16;
+		} else if (ticks % 8 == 0) {
+			ticks /= 8;
+			prescale = PWM4_PRESCALER_8;
+		} else if (ticks % 4 == 0) {
+			ticks /= 4;
+			prescale = PWM4_PRESCALER_4;
+		} else if (ticks % 2 == 0) {
+			ticks /= 2;
+			prescale = PWM4_PRESCALER_2;
+		} else {
+			prescale = PWM2_PRESCALER_1;
+		}
+#endif
 	} else {
 		// all other timers have the same prescalers
 		if (ticks % 1024 == 0) {

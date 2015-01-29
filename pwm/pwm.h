@@ -138,6 +138,25 @@
 #define PWM2_PRESCALER_256  6
 #define PWM2_PRESCALER_1024 7
 
+// on 32u4 timer4 have different prescaler and registers
+#if defined __AVR_ATmega32U4__
+#define PWM4_PRESCALER_1      1
+#define PWM4_PRESCALER_2      2
+#define PWM4_PRESCALER_4      3
+#define PWM4_PRESCALER_8      4
+#define PWM4_PRESCALER_16     5
+#define PWM4_PRESCALER_32     6
+#define PWM4_PRESCALER_64     7
+#define PWM4_PRESCALER_128    8
+#define PWM4_PRESCALER_256    9
+#define PWM4_PRESCALER_512   10
+#define PWM4_PRESCALER_1024  11
+#define PWM4_PRESCALER_2048  12
+#define PWM4_PRESCALER_4096  13
+#define PWM4_PRESCALER_8192  14
+#define PWM4_PRESCALER_16384 15
+#endif
+
 // "low level" version
 extern bool setPWM(
 		byte pwm, unsigned int icr,

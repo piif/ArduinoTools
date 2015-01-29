@@ -131,6 +131,7 @@ typedef union _tccr {
 		byte CSn:3;   // Clock Select
 		byte WGMnH:2; // Waveform Generation Mode High bits
 		byte unused:3; // depends on timer
+
 		byte WGMnL:2; // Waveform Generation Mode Low bits
 		byte COMnC:2; // only for 1,3 on 32u4 + 1,3,4,5 on 2560
 		byte COMnB:2;
@@ -138,17 +139,68 @@ typedef union _tccr {
 	} fields;
 } TCCR_REG;
 
+#if defined __AVR_ATmega32U4__
+// different register on timer4
+typedef union _tccr4 {
+	word all;
+
+	struct _registers {
+		byte TCCRnD:8;
+		byte TCCRnC:8;
+		byte TCCRnB:8;
+		byte TCCRnA:8;
+	} registers;
+
+	struct _fields {
+		// ordered from low bits to high bits
+		byte WGMnL:2; // Waveform Generation Mode Low bits
+		byte unusedD:6;
+
+		byte PWMnD:1;
+		byte FOCnD:1;
+		byte COMnD:2;
+		byte COMshadow:4;
+
+		byte CSn:4;   // Clock Select
+		byte unusedB:3;
+		byte PWMnX:1;
+
+		byte PWMnB:1;
+		byte PWMnA:1;
+		byte FOCn:2;
+		byte COMnB:2;
+		byte COMnA:2;
+	} fields;
+} TCCR4_REG;
+#endif
+
 #define READ_TCCR_REG(variable, num) \
 	variable.registers.TCCRnA = TCCR ## num ## A;  \
 	variable.registers.TCCRnB = TCCR ## num ## B
+#define READ_TCCR4_REG(variable) \
+	variable.registers.TCCRnA = TCCR4A;  \
+	variable.registers.TCCRnB = TCCR4B;  \
+	variable.registers.TCCRnC = TCCR4C;  \
+	variable.registers.TCCRnD = TCCR4D
 
 #define WRITE_TCCR_REG(variable, num) \
 	TCCR ## num ## A = variable.registers.TCCRnA;  \
 	TCCR ## num ## B = variable.registers.TCCRnB
+#define WRITE_TCCR4_REG(variable) \
+	TCCR4A = variable.registers.TCCRnA;  \
+	TCCR4B = variable.registers.TCCRnB;  \
+	TCCR4C = variable.registers.TCCRnC;  \
+	TCCR4D = variable.registers.TCCRnD
 
 #define SET_TCCR_WGM(variable, wgm) \
 	variable.fields.WGMnL = (wgm) & 0x3;  \
 	variable.fields.WGMnH = (wgm) >> 2
+#define SET_TCCR4_WGM(variable, wgm)            \
+	variable.fields.WGMnL = (wgm) & 0x3;        \
+	variable.fields.PWMnA = ((wgm) >> 2) & 0x1; \
+	variable.fields.PWMnB = ((wgm) >> 2) & 0x1; \
+	variable.fields.PWMnB = ((wgm) >> 2) & 0x1; \
+	variable.fields.PWMnD = (wgm) >> 3
 
 // TOIEx and OCIExx have same values for timers 0 to 5, excepted for leonardo family
 // where timer4 is different, but *ableTimerInterrupt function handle this case
@@ -257,6 +309,8 @@ bool setAnalogCompReference(byte ref);
 #if defined(TIMER5_OVF_vect)
 	#define _INTERRUPTS_TIMER_TOTAL 6
 #elif defined(TIMER4_OVF_vect)
+	// if 32u4, there's no timer2, but we let a empty slot to avoid
+	// to shift all counts in ArduinoToolsInternals.h
 	#define _INTERRUPTS_TIMER_TOTAL 5
 #elif defined(TIMER3_OVF_vect)
 	#define _INTERRUPTS_TIMER_TOTAL 4

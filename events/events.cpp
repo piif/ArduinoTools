@@ -181,12 +181,12 @@ void Events::waitNext(word sleepMode) {
 
 void Events::dump(Stream &s) {
 	for (int q = 0; q < queueSize; q++) {
-		s.print("q["); s.print(q); s.print("] = ");
+		s.print("* q["); s.print(q); s.print("] = ");
 		s.print(eventQueueTypes[q]); s.print(" / ");; s.println(eventQueueDetails[q]);
 	}
 	for (int h = 0; h < eventHandlerMax; h++) {
 		eventHandler *hdl = &(handlers[h]);
-		s.print("h["); s.print(h); s.print(" ("); s.print((int)hdl); s.print(")] = ");
+		s.print("* h["); s.print(h); s.print(" ("); s.print((int)hdl); s.print(")] = ");
 		if (hdl->type == event_free) {
 			s.println("-");
 		} else {
@@ -194,22 +194,22 @@ void Events::dump(Stream &s) {
 		}
 		switch(hdl->type) {
 		case event_input:
-			s.print(" input: pin ");
+			s.print("*  input: pin ");
 			s.print(hdl->inputSpec.pin); s.print(" / int "); s.print(hdl->inputSpec.interrupt); s.print(" / mode "); s.println(hdl->inputSpec.mode);
 			break;
 		case event_timer:
-			s.print(" timer: count ");
+			s.print("*  timer: count ");
 			s.print(hdl->timerSpec.count); s.print(" / delay "); s.print(hdl->timerSpec.delay); s.print(" / next "); s.println(hdl->timerSpec.next);
 			break;
 		case event_analogcomp:
-			s.print(" analog: mode ");
+			s.print("*  analog: mode ");
 			s.println(hdl->analogCompSpec.mode);
 			break;
 		case event_serial:
-			s.println(" serial: Not Implemented ");
+			s.println("*  serial: Not Implemented ");
 			break;
 		case event_twi:
-			s.println(" twi: Not Implemented ");
+			s.println("*  twi: Not Implemented ");
 			break;
 		case event_free:
 			break;

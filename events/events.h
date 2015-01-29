@@ -14,7 +14,11 @@
 // => option -Wl,--allow-multiple-definition is needed or linking fails.
 
 // timer used for events "wait" loops
+#if defined(__AVR_ATmega32U4__)
+#define DEFAULT_EVENTS_TIMER 3
+#else
 #define DEFAULT_EVENTS_TIMER 2
+#endif
 #define DEFAULT_EVENTS_TIMEOUT 100000L
 
 // timer events are handled with a precision of 1024µs

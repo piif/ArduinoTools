@@ -27,6 +27,9 @@ bool setPWM(byte pwm, unsigned int icr,
 
 	byte oldSREG;
 	TCCR_REG TCCR;
+#if defined __AVR_ATmega32U4__
+	TCCR4_REG TCCR4;
+#endif
 
 	switch(pwm) {
 	case 0:
@@ -47,7 +50,11 @@ bool setPWM(byte pwm, unsigned int icr,
 #endif
 #ifdef TCCR4A
 	case 4:
+#if defined __AVR_ATmega32U4__
+		READ_TCCR4_REG(TCCR4);
+#else
 		READ_TCCR_REG(TCCR, 4);
+#endif
 		break;
 #endif
 #ifdef TCCR5A
@@ -57,11 +64,21 @@ bool setPWM(byte pwm, unsigned int icr,
 #endif
 	}
 
-	TCCR.fields.COMnA = com_a;
-	TCCR.fields.COMnB = com_b;
-	SET_TCCR_WGM(TCCR, wgm);
-	TCCR.fields.CSn = cs;
-
+#if defined __AVR_ATmega32U4__
+	if (pwm == 4) {
+		TCCR4.fields.COMnA = com_a;
+		TCCR4.fields.COMnB = com_b;
+		SET_TCCR4_WGM(TCCR4, wgm);
+		TCCR4.fields.CSn = cs;
+	} else {
+#endif
+		TCCR.fields.COMnA = com_a;
+		TCCR.fields.COMnB = com_b;
+		SET_TCCR_WGM(TCCR, wgm);
+		TCCR.fields.CSn = cs;
+#if defined __AVR_ATmega32U4__
+	}
+#endif
 	oldSREG = SREG;
 	cli();
 	switch(pwm) {
@@ -93,7 +110,11 @@ bool setPWM(byte pwm, unsigned int icr,
 #endif
 #ifdef TCCR4A
 	case 4:
+#if defined __AVR_ATmega32U4__
+		WRITE_TCCR4_REG(TCCR4);
+#else
 		WRITE_TCCR_REG(TCCR, 4);
+#endif
 		OCR4A = (byte)ocr_a;
 		OCR4B = (byte)ocr_b;
 		break;
@@ -112,6 +133,7 @@ bool setPWM(byte pwm, unsigned int icr,
 	return true;
 }
 
+// TODO : handle 32u4 Timer4 case
 bool setPWM3(
 		byte pwm, unsigned int icr,
 		byte com_a, unsigned int ocr_a,
