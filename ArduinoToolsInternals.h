@@ -83,7 +83,7 @@ InterruptHandler setInterruptHandler(short interruptNumber, InterruptHandler han
 			#error Cannot use Timer2 on 32u4 processor
 		#endif
 	#endif
-	#if defined(TIMER3_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_2)
+	#if defined(TIMER3_OVF_vect) && defined(USE_INTERRUPT_TIMER_HANDLER_3)
 		#if defined(TCCR3A)
 		_set_ISR(TIMER3_OVF_vect, _INTERRUPTS_FIRST_TIMER+3, 3)
 		#else
