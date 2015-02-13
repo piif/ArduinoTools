@@ -31,9 +31,9 @@ extern volatile int ISRnum, ISRcalled, ISRlast1, ISRlast2;
 
 #ifdef ARDUINO_TOOLS_DEBUG
 	#define LOG(str) if (Serial) { Serial.println(str); Serial.flush(); }
-	#define LOGd(v)  if (Serial) { Serial.print(#v "\t: "); Serial.println(v); Serial.flush(); }
-	#define LOGx(v)  if (Serial) { Serial.print(#v "\t: 0x"); Serial.println(v, HEX); Serial.flush(); }
-	#define LOGb(v)  if (Serial) { Serial.print(#v "\t: 0b"); Serial.println(v, BIN); Serial.flush(); }
+	#define LOGd(v)  if (Serial) { Serial.print(F(#v "\t: ")); Serial.println(v); Serial.flush(); }
+	#define LOGx(v)  if (Serial) { Serial.print(F(#v "\t: 0x")); Serial.println(v, HEX); Serial.flush(); }
+	#define LOGb(v)  if (Serial) { Serial.print(F(#v "\t: 0b")); Serial.println(v, BIN); Serial.flush(); }
 #else
 	#define LOG(str)
 	#define LOGd(v)
@@ -42,9 +42,9 @@ extern volatile int ISRnum, ISRcalled, ISRlast1, ISRlast2;
 #endif
 
 #define WARN(str) if (Serial) { Serial.println(str); Serial.flush(); }
-#define WARNd(v)  if (Serial) { Serial.print(#v "\t: "); Serial.println(v); Serial.flush(); }
-#define WARNx(v)  if (Serial) { Serial.print(#v "\t: 0x"); Serial.println(v, HEX); Serial.flush(); }
-#define WARNb(v)  if (Serial) { Serial.print(#v "\t: 0b"); Serial.println(v, BIN); Serial.flush(); }
+#define WARNd(v)  if (Serial) { Serial.print(F(#v "\t: ")); Serial.println(v); Serial.flush(); }
+#define WARNx(v)  if (Serial) { Serial.print(F(#v "\t: 0x")); Serial.println(v, HEX); Serial.flush(); }
+#define WARNb(v)  if (Serial) { Serial.print(F(#v "\t: 0b")); Serial.println(v, BIN); Serial.flush(); }
 
 /**
  * How to know which kind of arduino we are compiling for :

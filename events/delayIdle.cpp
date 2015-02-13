@@ -13,6 +13,17 @@ void delayIdleISR(int data) {
 	delayLoops[data]--;
 }
 
+/**
+ * TODO réfléchir à 2 version d'utilisation de timer 0 :
+ * - une qui garde millis()/micros() fonctionnels => on sait qu'on sera réveillé régulièrement par timer0_OVF, on se contente donc de compter les millis
+ * - une qui flingue ces méthodes et se pose à la place. dans ce cas, on peut mettre un prescale pour rester vraiment idle le plus longtemps possible
+ *   on peut alors changer le fonctionnement de millis() et laisser tomber micros() (sachant de delayMicros() continue à marcher lui)
+ *   - on place un prescale et un OCRA permettant d'appeler OCIE0A 1 fois par ms => ça permet de mettre à jour un compteur de millis
+ *   - si on demande à s'arréter plus longtemps, on change le prescale pour attendre plus longtemps et au réveil on met à jour le compteur de milis
+ *     selon prescale et la valeur courante de timer0. après cela, on remet le bon prescale et on adapte la valeur du compteur pour pas se décaler trop.
+ *     selon les combinaisons de prescale/OCRA/F_CPU qui collent, on peut par exemple prévoir un delayIdle de 2, 4, 8, 16 ms qui embraye ensuite
+ *     sur un delay de la valeur restante
+ */
 bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool cancelOnInterrupt) {
 	bool result = true;
 
@@ -111,19 +122,27 @@ bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool
 		}
 	}
 
-	long timerSize = (timer == 1) ? 65536 : 256;
+#if defined __AVR_ATmega32U4__
+	word timerSize = (timer == 1 || timer == 3) ? 65536 : 256;
+#else
+	word timerSize = (timer == 1) ? 65536 : 256;
+#endif
 	delayLoops[timer] = ticks / timerSize;
-	int remainder;
+	word remainder;
 	if (ticks % timerSize == 0) {
 		remainder = 0;
 	} else {
 		remainder = timerSize - ticks % timerSize;
 		delayLoops[timer]++;
 	}
-//	Serial.print("delayIdle : ");
+//	Serial.print(F("delayIdle : prescale = "));
 //	Serial.print(prescale);
-//	Serial.print(" / ");
-//	Serial.println(ticks);
+//	Serial.print(F(" / ticks = "));
+//	Serial.print(ticks);
+//	Serial.print(F(" => loops = "));
+//	Serial.print(delayLoops[timer]);
+//	Serial.print(F(" / rem = "));
+//	Serial.println(remainder);
 //	Serial.flush();
 //	delay(400);
 

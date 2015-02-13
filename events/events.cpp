@@ -164,7 +164,7 @@ void Events::waitNext(word sleepMode) {
 		}
 	} else {
 		// wait in a interruptible manner
-		// TODO : remove time ellapsed since "now" calculation, but risks to be too late
+		// TODO : remove time elapsed since "now" calculation, but risks to be too late
 		// round value too TIMER_EVENT_PRECISION multiple
 		long delay = next - now, rem = delay % TIMER_EVENT_PRECISION;
 		if (rem > TIMER_EVENT_PRECISION / 2) {

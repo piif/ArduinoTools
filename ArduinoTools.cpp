@@ -159,34 +159,27 @@ bool disableInputInterrupt(byte input) {
 }
 
 bool enableTimerInterrupt(byte timer, byte mode) {
-#if defined(__AVR_ATmega32U4__)
-	if (timer == 2 || timer > 4) {
-		return false;
-	}
-	if (mode == TIMER_COMPARE_D && timer != 4) {
-		return false;
-	}
-	if (mode == TIMER_COMPARE_C && timer != 1 &&  timer != 3) {
-		return false;
-	}
-#elif defined(__AVR_ATmega2560__)
-	if (timer > 5) {
-		return false;
-	}
-	if (mode == TIMER_COMPARE_C && timer != 1 &&  timer != 3 && timer != 4 && timer != 5) {
-		return false;
-	}
-	if (mode != TIMER_COMPARE_A && mode != TIMER_COMPARE_B && mode != TIMER_COMPARE_C && mode != TIMER_OVERFLOW) {
-		return false;
-	}
-#else
-	if (timer > 2) {
-		return false;
-	}
-	if (mode != TIMER_COMPARE_A && mode != TIMER_COMPARE_B && mode != TIMER_OVERFLOW) {
-		return false;
-	}
-#endif
+// a bit overkill ...
+//#if defined(__AVR_ATmega32U4__)
+//	if (mode == TIMER_COMPARE_D && timer != 4) {
+//		return false;
+//	}
+//	if (mode == TIMER_COMPARE_C && timer != 1 &&  timer != 3) {
+//		return false;
+//	}
+//#elif defined(__AVR_ATmega2560__)
+//	if (mode == TIMER_COMPARE_C && timer != 1 &&  timer != 3 && timer != 4 && timer != 5) {
+//		return false;
+//	}
+//	if (mode != TIMER_COMPARE_A && mode != TIMER_COMPARE_B && mode != TIMER_COMPARE_C && mode != TIMER_OVERFLOW) {
+//		return false;
+//	}
+//#else
+//	if (mode != TIMER_COMPARE_A && mode != TIMER_COMPARE_B && mode != TIMER_OVERFLOW) {
+//		return false;
+//	}
+//#endif
+
 	switch(timer) {
 	case 0:
 		TIMSK0 |= (1<<mode);
@@ -194,7 +187,8 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 	case 1:
 		TIMSK1 |= (1<<mode);
 		return true;
-#ifdef TIMSK2
+// iom32u4.h defines this register, but it does not exists !
+#if defined(TIMSK2) && !defined(__AVR_ATmega32U4__)
 	case 2:
 		TIMSK2 |= (1<<mode);
 		return true;
@@ -206,7 +200,6 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 #endif
 #ifdef TIMSK4
 	case 4:
-		// TODO : if mega32u, mode bits are differents
 #if defined(__AVR_ATmega32U4__)
 		switch(mode) {
 		case TIMER_COMPARE_A:
@@ -229,7 +222,7 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 #endif
 		return true;
 #endif
-#ifdef TIMSK5
+#if defined(TIMSK5) && !defined(__AVR_ATmega32U4__)
 	case 5:
 		TIMSK5 |= (1<<mode);
 		return true;
@@ -237,6 +230,7 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 	}
 	return false;
 }
+
 bool disableTimerInterrupt(byte timer, byte mode) {
 	switch(timer) {
 	case 0:
@@ -245,20 +239,22 @@ bool disableTimerInterrupt(byte timer, byte mode) {
 	case 1:
 		TIMSK1 &= ~(1<<mode);
 		return true;
+#if defined(TIMSK2) && !defined(__AVR_ATmega32U4__)
 	case 2:
 		TIMSK2 &= ~(1<<mode);
 		return true;
-#ifdef TCCR3A
+#endif
+#ifdef TIMSK3
 	case 3:
 		TIMSK3 &= ~(1<<mode);
 		return true;
 #endif
-#ifdef TCCR4A
+#ifdef TIMSK4
 	case 4:
 		TIMSK4 &= ~(1<<mode);
 		return true;
 #endif
-#ifdef TCCR5A
+#if defined(TIMSK5) && !defined(__AVR_ATmega32U4__)
 	case 5:
 		TIMSK5 &= ~(1<<mode);
 		return true;
