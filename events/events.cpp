@@ -38,6 +38,7 @@ Events::Events() {
 	eventHandlerMax = 0;
 	handlers = 0;
 	queueSize = 0;
+	maxQueueSize = 0;
 	eventQueueTypes = 0;
 	eventQueueDetails = 0;
 	eventLoop = 0;
@@ -47,8 +48,8 @@ Events::Events() {
 }
 
 void Events::begin(byte defaultTimer, unsigned long defaultTimeout) {
-	eventQueueTypes = (byte *)malloc(MAX_QUEUE_SIZE);
-	eventQueueDetails = (short *)malloc(MAX_QUEUE_SIZE);
+	eventQueueTypes = (byte *)malloc(MAX_QUEUE_SIZE * sizeof(byte));
+	eventQueueDetails = (int *)malloc(MAX_QUEUE_SIZE * sizeof(int));
 	this->defaultTimer = defaultTimer;
 	this->defaultTimeout = defaultTimeout;
 }
@@ -60,16 +61,18 @@ void Events::begin() {
 bool Events::fire(Events::eventType type) {
 	return fire(type, -1);
 }
-bool Events::fire(Events::eventType type, short detail) {
+bool Events::fire(Events::eventType type, int detail) {
 //	delayCancel(defaultTimer);
-	byte qs = queueSize;
+	byte qs = queueSize++;
+	if (maxQueueSize < queueSize) {
+		maxQueueSize = queueSize;
+	}
 	if (qs >= MAX_QUEUE_SIZE) {
 		// full => ignore
 		return false;
 	}
 	eventQueueTypes[qs] = type;
 	eventQueueDetails[qs] = detail;
-	queueSize++;
 
 	return true;
 }
@@ -79,8 +82,9 @@ void Events::waitNext() {
 }
 
 void Events::waitNext(word sleepMode) {
-	if (queueSize == MAX_QUEUE_SIZE) {
+	if (queueSize >= MAX_QUEUE_SIZE) {
 		LOG("Queue was full");
+		queueSize = MAX_QUEUE_SIZE;
 	}
 
 	bool found = false;
@@ -180,7 +184,10 @@ void Events::waitNext(word sleepMode) {
 }
 
 void Events::dump(Stream &s) {
-	for (int q = 0; q < queueSize; q++) {
+	s.print("* max queueSize was ");s.println(maxQueueSize);
+	maxQueueSize = 0;
+
+	for (int q = 0; q < queueSize && q < MAX_QUEUE_SIZE; q++) {
 		s.print("* q["); s.print(q); s.print("] = ");
 		s.print(eventQueueTypes[q]); s.print(" / ");; s.println(eventQueueDetails[q]);
 	}

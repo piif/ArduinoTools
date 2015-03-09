@@ -112,7 +112,7 @@ public:
 	 * Fire a new event with given type and detail.
 	 * Returns false if queue is full
 	 */
-	bool fire(eventType type, short detail);
+	bool fire(eventType type, int detail);
 	bool fire(eventType type);
 
 	/**
@@ -132,6 +132,7 @@ public:
 	void dump(Stream &s);
 
 	volatile byte queueSize;
+	volatile byte maxQueueSize;
 
 private:
 	byte defaultTimer;
@@ -140,7 +141,7 @@ private:
 	byte eventHandlerMax;
 	eventHandler *handlers;
 	byte *eventQueueTypes;
-	short *eventQueueDetails;
+	int *eventQueueDetails;
 
 	int findNewHandler();
 	bool findOther(byte type, byte subtype, byte excepted);
