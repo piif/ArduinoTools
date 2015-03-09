@@ -1,3 +1,7 @@
+#ifndef ARDUINO_ARCH_AVR
+#error "avrtools library only for AVR targets"
+#endif
+
 #define NOT_IN_MAIN
 #include "ArduinoTools.h"
 
