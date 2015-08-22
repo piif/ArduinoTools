@@ -71,7 +71,7 @@ void parseInput(byte *str, const int len, Stream &channel) {
 	// unknown command.
 	channel.print("!! Unknown command '");
 	channel.print(str[0], DEC);
-	channel.println("'. ignored.");
+	channel.println("', ignored.");
 }
 
 void handleInput() {
@@ -112,7 +112,9 @@ void handleInput(Stream &channel, bool echo) {
 	// handle input
 	for (i = 0; i < current; i++) {
 		if (buffer[i] == '\n' || buffer[i] == '\r') {
-			parseInput(buffer, i, channel);
+			if (i > 0) { // skip empty lines
+				parseInput(buffer, i, channel);
+			}
 			// skip newlines
 			do {
 				i++;
@@ -131,6 +133,7 @@ void handleInput(Stream &channel, bool echo) {
 	if (current == SERIAL_INPUT_MAX_LEN) {
 		// buffer overflow => parse or ignore ?
 		// for the moment, skip data.
+		channel.print("\nLine to long, input aborted.\n");
 		current = 0;
 	}
 }
