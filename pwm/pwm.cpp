@@ -3,6 +3,79 @@
 #include <avr/io.h>
 #include <ArduinoTools.h>
 
+byte getPrescale(byte timer, int divider) {
+#if defined __AVR_ATmega32U4__
+	if (timer == 4) {
+		switch (divider) {
+		case     1: return PWM4_PRESCALER_1;
+		case     2: return PWM4_PRESCALER_2;
+		case     4: return PWM4_PRESCALER_4;
+		case     8: return PWM4_PRESCALER_8;
+		case    16: return PWM4_PRESCALER_16;
+		case    32: return PWM4_PRESCALER_32;
+		case    64: return PWM4_PRESCALER_64;
+		case   128: return PWM4_PRESCALER_128;
+		case   256: return PWM4_PRESCALER_256;
+		case   512: return PWM4_PRESCALER_512;
+		case  1024: return PWM4_PRESCALER_1024;
+		case  2048: return PWM4_PRESCALER_2048;
+		case  4096: return PWM4_PRESCALER_4096;
+		case  8192: return PWM4_PRESCALER_8192;
+		case 16384: return PWM4_PRESCALER_16384;
+		}
+	} else
+#endif
+	if (timer == 2) {
+		switch (divider) {
+		case    1: return PWM2_PRESCALER_1;
+		case    8: return PWM2_PRESCALER_8;
+		case   32: return PWM2_PRESCALER_32;
+		case   64: return PWM2_PRESCALER_64;
+		case  128: return PWM2_PRESCALER_128;
+		case  256: return PWM2_PRESCALER_256;
+		case 1024: return PWM2_PRESCALER_1024;
+		}
+	} else {
+		switch (divider) {
+		case 1   : return PWMx_PRESCALER_1;
+		case 8   : return PWMx_PRESCALER_8;
+		case 64  : return PWMx_PRESCALER_64;
+		case 256 : return PWMx_PRESCALER_256;
+		case 1024: return PWMx_PRESCALER_1024;
+		}
+	}
+	return 0;
+}
+
+// compute nearest prescale and top value for given timer to achieve wanted frequency
+// outputs rounded frequency
+void computePWM(byte timer, unsigned long &frequency, word &prescale, word &top) {
+	// compute ticks number
+	unsigned long ticks = F_CPU / frequency;
+
+#if defined __AVR_ATmega32U4__
+	word timerMax = (timer == 1 || timer == 3) ? 65536 : 256;
+#else
+	word timerMax = (timer == 1) ? 65535 : 255;
+#endif
+
+	if (ticks <= timerMax) {
+		prescale = getPrescale(timer, 1);
+		top = ticks;
+		return;
+	}
+	// compute nearest prescale
+	prescale = 0;
+	word p = 1;
+	while (prescale == 0 || ticks > timerMax) {
+		ticks >>= 1;
+		p <<= 1;
+		prescale = getPrescale(timer, p);
+	}
+	top = ticks;
+	frequency = (p * ticks) / F_CPU;
+}
+
 /**
  * TCCR0A : COM0A1 COM0A0 COM0B1 COM0B0 – – WGM01 WGM00
  * TCCR0B : FOC0A FOC0B – – WGM02 CS02 CS01 CS00

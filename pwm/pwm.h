@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+// TODO : add ATtiny defines
+
 /**
  * On Arduino UNO :
  * Timer 0 :
@@ -156,6 +158,15 @@
 #define PWM4_PRESCALER_8192  14
 #define PWM4_PRESCALER_16384 15
 #endif
+
+// return prescale constant for given timer and divider
+// returns 0 if this prescale value doesn't exists for this timer
+byte getPrescale(byte timer, int divider);
+
+// compute nearest prescale and top value for given timer to achieve wanted frequency
+// outputs rounded frequency
+void computePWM(byte timer, unsigned long &frequency,
+		word &prescale, word &top);
 
 // "low level" version
 extern bool setPWM(
