@@ -99,6 +99,8 @@ typedef void (*InterruptHandler)(int data);
 			((p) == 19) ? 2 : \
 			((p) == 20) ? 1 : \
 			((p) == 21) ? 0 : -1)
+#elif defined (__AVR_ATtinyX5__)
+	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : -1)
 #else
 	#define INTERRUPT_FOR_PIN(p) (-1)
 	#warning variant not implemented
@@ -138,6 +140,30 @@ typedef union _tccr {
 		byte COMnA:2;
 	} fields;
 } TCCR_REG;
+
+#if defined __AVR_ATtinyX5__
+// specific case for ATTiny Timer 1
+typedef struct _tccr_tiny {
+	// ordered from low bits to high bits
+	byte _CS1:4;
+	byte _COM1A:2;
+	byte _PWM1A:1; // 0 = off / 1 = active
+	byte _CTC1:1;
+} TCCR_REG_TINY;
+extern TCCR_REG_TINY *TCCR1_bits;
+
+typedef struct _gtccr_tiny {
+	// ordered from low bits to high bits
+	byte _PSR0:1;
+	byte _PSR1:1;
+	byte _FOC1A:1;
+	byte _FOC1B:1;
+	byte _COM1B:2;
+	byte _PWM1B:1;
+	byte _TSM:1;
+} GTCCR_REG_TINY;
+extern GTCCR_REG_TINY *GTCCR_bits;
+#endif
 
 #if defined __AVR_ATmega32U4__
 // different register on timer4

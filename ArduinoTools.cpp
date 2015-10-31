@@ -11,6 +11,9 @@
 #define NB_INTERRUPT _VECTORS_SIZE / _VECTOR_SIZE
 #endif
 
+TCCR_REG_TINY *TCCR1_bits = (TCCR_REG_TINY *)&TCCR1;
+GTCCR_REG_TINY *GTCCR_bits = (GTCCR_REG_TINY *)&GTCCR;
+
 extern InterruptHandler interruptHandler[];
 extern int interruptData[];
 
@@ -184,13 +187,33 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 //	}
 //#endif
 
+#if defined(__AVR_ATtinyX5__)
+	if (timer == 0) {
+		TIMSK |= (1<<mode);
+		return true;
+	} else if (timer == 1) {
+		switch(mode) {
+		case TIMER_COMPARE_A:
+			TIMSK |= (1<<OCIE1A);
+			return true;
+		case TIMER_COMPARE_B:
+			TIMSK |= (1<<OCIE1B);
+			return true;
+		case TIMER_OVERFLOW:
+			TIMSK |= (1<<TOIE1);
+			return true;
+		}
+	}
+#endif
 	switch(timer) {
+#ifdef TIMSK0
 	case 0:
 		TIMSK0 |= (1<<mode);
 		return true;
 	case 1:
 		TIMSK1 |= (1<<mode);
 		return true;
+#endif
 // iom32u4.h defines this register, but it does not exists !
 #if defined(TIMSK2) && !defined(__AVR_ATmega32U4__)
 	case 2:
@@ -236,13 +259,33 @@ bool enableTimerInterrupt(byte timer, byte mode) {
 }
 
 bool disableTimerInterrupt(byte timer, byte mode) {
+#if defined(__AVR_ATtinyX5__)
+	if (timer == 0) {
+		TIMSK = ~(1<<mode);
+		return true;
+	} else if (timer == 1) {
+		switch(mode) {
+		case TIMER_COMPARE_A:
+			TIMSK = ~(1<<OCIE1A);
+			return true;
+		case TIMER_COMPARE_B:
+			TIMSK = ~(1<<OCIE1B);
+			return true;
+		case TIMER_OVERFLOW:
+			TIMSK = ~(1<<TOIE1);
+			return true;
+		}
+	}
+#endif
 	switch(timer) {
+#ifdef TIMSK0
 	case 0:
 		TIMSK0 &= ~(1<<mode);
 		return true;
 	case 1:
 		TIMSK1 &= ~(1<<mode);
 		return true;
+#endif
 #if defined(TIMSK2) && !defined(__AVR_ATmega32U4__)
 	case 2:
 		TIMSK2 &= ~(1<<mode);
@@ -409,11 +452,11 @@ void sleepNow(word sleep_mode) {
      *     SLEEP_MODE_PWR_DOWN     -the most power savings
      */
     set_sleep_mode(sleep_mode);   // sleep mode is set here
-    sleep_enable(); // then, it's enabled
+//    sleep_enable(); // then, it's enabled -> done by sleep_mode()
 
     sleep_mode(); // here, we really enter in sleep mode
     // Here an external event wake up the CPU
-    sleep_disable(); // disable sleep mode
+//    sleep_disable(); // disable sleep mode -> done by sleep_mode()
 }
 
 void sleepNow() {
