@@ -97,7 +97,7 @@ void computePWM(byte timer, unsigned long &frequency, word &prescale, word &top)
 		prescale = getPrescale(timer, p);
 	}
 	top = ticks;
-	frequency = (p * ticks) / F_CPU;
+	frequency = F_CPU / (ticks * p);
 }
 
 /**
@@ -309,7 +309,11 @@ bool setPWM3(
 		ICR1 = icr;
 		OCR1A = ocr_a;
 		OCR1B = ocr_b;
+#if defined(__AVR_ATtinyX5__)
 		OCR1C = ocr_c;
+#else
+		ICR1 = ocr_c;
+#endif
 		break;
 #endif
 #ifdef OCR3C

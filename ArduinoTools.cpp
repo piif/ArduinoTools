@@ -11,8 +11,10 @@
 #define NB_INTERRUPT _VECTORS_SIZE / _VECTOR_SIZE
 #endif
 
-TCCR_REG_TINY *TCCR1_bits = (TCCR_REG_TINY *)&TCCR1;
-GTCCR_REG_TINY *GTCCR_bits = (GTCCR_REG_TINY *)&GTCCR;
+#if defined __AVR_ATtinyX5__
+	TCCR_REG_TINY *TCCR1_bits = (TCCR_REG_TINY *)&TCCR1;
+	GTCCR_REG_TINY *GTCCR_bits = (GTCCR_REG_TINY *)&GTCCR;
+#endif
 
 extern InterruptHandler interruptHandler[];
 extern int interruptData[];
