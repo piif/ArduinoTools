@@ -1,6 +1,11 @@
 #define NOT_IN_MAIN
+#include <Arduino.h>
 #include "events.h"
 #include "delayIdle.h"
+
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+#include "myMillis/myMillis.h"
+#endif
 
 #define MAX_QUEUE_SIZE 5
 #define HANDLER_ALLOC_BLOCK_SIZE 5
@@ -123,7 +128,11 @@ void Events::waitNext(word sleepMode) {
 		// look at expired timer events + compute next time
 		// TODO : must avoid to use millis/micros
 		// => must compute our own time elapsed since preceding call, using timer values
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+		now = myMillis() * 1000;
+#else
 		now = (millis() * 1000) + (micros() % 1000);
+#endif
 		next = 0xffffffffL;
 
 		for (int h = 0; h < eventHandlerMax; h++) {
@@ -250,7 +259,11 @@ Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Even
 	}
 
 	result->timerSpec.delay = ms;
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+	result->timerSpec.next = (myMillis() + ms) * 1000;
+#else
 	result->timerSpec.next = (millis() + ms) * 1000 + (micros() % 1000);
+#endif
 	result->timerSpec.count = count;
 
 	// TODO : update global delay if empty or if "next" is before

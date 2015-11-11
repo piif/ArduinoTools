@@ -24,6 +24,9 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
 
+#define PRIMITIVE_CAT(x, y) x##y
+#define CAT(x, y) PRIMITIVE_CAT(x, y)
+
 // for debug purpose
 #ifdef ARDUINO_TOOLS_DEBUG
 extern volatile int ISRnum, ISRcalled, ISRlast1, ISRlast2;
@@ -105,6 +108,29 @@ typedef void (*InterruptHandler)(int data);
 	#define INTERRUPT_FOR_PIN(p) (-1)
 	#warning variant not implemented
 #endif
+
+#if defined (__AVR_ATmega328P__)
+	#define INTERRUPT_NAME_FOR_PIN_2 0
+	#define INTERRUPT_NAME_FOR_PIN_3 1
+#elif defined (__AVR_ATmega32U4__)
+	#define INTERRUPT_NAME_FOR_PIN_0 2
+	#define INTERRUPT_NAME_FOR_PIN_1 3
+	#define INTERRUPT_NAME_FOR_PIN_2 1
+	#define INTERRUPT_NAME_FOR_PIN_3 0
+	#define INTERRUPT_NAME_FOR_PIN_7 6
+#elif defined (__AVR_ATmega2560__)
+	#define INTERRUPT_NAME_FOR_PIN_2 4
+	#define INTERRUPT_NAME_FOR_PIN_3 5
+	#define INTERRUPT_NAME_FOR_PIN_18 3
+	#define INTERRUPT_NAME_FOR_PIN_19 2
+	#define INTERRUPT_NAME_FOR_PIN_20 1
+	#define INTERRUPT_NAME_FOR_PIN_21 0
+#elif defined (__AVR_ATtinyX5__)
+	#define INTERRUPT_FOR_PIN_2 0
+#else
+	#warning variant not implemented
+#endif
+#define INTERRUPT_NAME_FOR_PIN(p) CAT(int, CAT(INTERRUPT_NAME_FOR_PIN_, p))
 
 /**
  * bitWrite(dest, bit, value) is defined in arduino.h to fix value of bit "bit" into "dest"
