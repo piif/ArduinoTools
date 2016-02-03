@@ -24,6 +24,9 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
 
+#define PRIMITIVE_CAT(x, y) x##y
+#define CAT(x, y) PRIMITIVE_CAT(x, y)
+
 // for debug purpose
 #ifdef ARDUINO_TOOLS_DEBUG
 extern volatile int ISRnum, ISRcalled, ISRlast1, ISRlast2;
@@ -99,10 +102,35 @@ typedef void (*InterruptHandler)(int data);
 			((p) == 19) ? 2 : \
 			((p) == 20) ? 1 : \
 			((p) == 21) ? 0 : -1)
+#elif defined (__AVR_ATtinyX5__)
+	#define INTERRUPT_FOR_PIN(p) (((p) == 2) ? 0 : -1)
 #else
 	#define INTERRUPT_FOR_PIN(p) (-1)
 	#warning variant not implemented
 #endif
+
+#if defined (__AVR_ATmega328P__)
+	#define INTERRUPT_NAME_FOR_PIN_2 0
+	#define INTERRUPT_NAME_FOR_PIN_3 1
+#elif defined (__AVR_ATmega32U4__)
+	#define INTERRUPT_NAME_FOR_PIN_0 2
+	#define INTERRUPT_NAME_FOR_PIN_1 3
+	#define INTERRUPT_NAME_FOR_PIN_2 1
+	#define INTERRUPT_NAME_FOR_PIN_3 0
+	#define INTERRUPT_NAME_FOR_PIN_7 6
+#elif defined (__AVR_ATmega2560__)
+	#define INTERRUPT_NAME_FOR_PIN_2 4
+	#define INTERRUPT_NAME_FOR_PIN_3 5
+	#define INTERRUPT_NAME_FOR_PIN_18 3
+	#define INTERRUPT_NAME_FOR_PIN_19 2
+	#define INTERRUPT_NAME_FOR_PIN_20 1
+	#define INTERRUPT_NAME_FOR_PIN_21 0
+#elif defined (__AVR_ATtinyX5__)
+	#define INTERRUPT_FOR_PIN_2 0
+#else
+	#warning variant not implemented
+#endif
+#define INTERRUPT_NAME_FOR_PIN(p) CAT(int, CAT(INTERRUPT_NAME_FOR_PIN_, p))
 
 /**
  * bitWrite(dest, bit, value) is defined in arduino.h to fix value of bit "bit" into "dest"
@@ -138,6 +166,30 @@ typedef union _tccr {
 		byte COMnA:2;
 	} fields;
 } TCCR_REG;
+
+#if defined __AVR_ATtinyX5__
+// specific case for ATTiny Timer 1
+typedef struct _tccr_tiny {
+	// ordered from low bits to high bits
+	byte _CS1:4;
+	byte _COM1A:2;
+	byte _PWM1A:1; // 0 = off / 1 = active
+	byte _CTC1:1;
+} TCCR_REG_TINY;
+extern TCCR_REG_TINY *TCCR1_bits;
+
+typedef struct _gtccr_tiny {
+	// ordered from low bits to high bits
+	byte _PSR0:1;
+	byte _PSR1:1;
+	byte _FOC1A:1;
+	byte _FOC1B:1;
+	byte _COM1B:2;
+	byte _PWM1B:1;
+	byte _TSM:1;
+} GTCCR_REG_TINY;
+extern GTCCR_REG_TINY *GTCCR_bits;
+#endif
 
 #if defined __AVR_ATmega32U4__
 // different register on timer4

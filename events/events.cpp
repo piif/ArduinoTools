@@ -1,6 +1,11 @@
 #define NOT_IN_MAIN
+#include <Arduino.h>
 #include "events.h"
 #include "delayIdle.h"
+
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+#include "myMillis/myMillis.h"
+#endif
 
 #define MAX_QUEUE_SIZE 5
 #define HANDLER_ALLOC_BLOCK_SIZE 5
@@ -38,6 +43,7 @@ Events::Events() {
 	eventHandlerMax = 0;
 	handlers = 0;
 	queueSize = 0;
+	maxQueueSize = 0;
 	eventQueueTypes = 0;
 	eventQueueDetails = 0;
 	eventLoop = 0;
@@ -47,8 +53,8 @@ Events::Events() {
 }
 
 void Events::begin(byte defaultTimer, unsigned long defaultTimeout) {
-	eventQueueTypes = (byte *)malloc(MAX_QUEUE_SIZE);
-	eventQueueDetails = (short *)malloc(MAX_QUEUE_SIZE);
+	eventQueueTypes = (byte *)malloc(MAX_QUEUE_SIZE * sizeof(byte));
+	eventQueueDetails = (int *)malloc(MAX_QUEUE_SIZE * sizeof(int));
 	this->defaultTimer = defaultTimer;
 	this->defaultTimeout = defaultTimeout;
 }
@@ -60,16 +66,18 @@ void Events::begin() {
 bool Events::fire(Events::eventType type) {
 	return fire(type, -1);
 }
-bool Events::fire(Events::eventType type, short detail) {
+bool Events::fire(Events::eventType type, int detail) {
 //	delayCancel(defaultTimer);
-	byte qs = queueSize;
+	byte qs = queueSize++;
+	if (maxQueueSize < queueSize) {
+		maxQueueSize = queueSize;
+	}
 	if (qs >= MAX_QUEUE_SIZE) {
 		// full => ignore
 		return false;
 	}
 	eventQueueTypes[qs] = type;
 	eventQueueDetails[qs] = detail;
-	queueSize++;
 
 	return true;
 }
@@ -79,8 +87,9 @@ void Events::waitNext() {
 }
 
 void Events::waitNext(word sleepMode) {
-	if (queueSize == MAX_QUEUE_SIZE) {
+	if (queueSize >= MAX_QUEUE_SIZE) {
 		LOG("Queue was full");
+		queueSize = MAX_QUEUE_SIZE;
 	}
 
 	bool found = false;
@@ -119,7 +128,11 @@ void Events::waitNext(word sleepMode) {
 		// look at expired timer events + compute next time
 		// TODO : must avoid to use millis/micros
 		// => must compute our own time elapsed since preceding call, using timer values
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+		now = myMillis() * 1000;
+#else
 		now = (millis() * 1000) + (micros() % 1000);
+#endif
 		next = 0xffffffffL;
 
 		for (int h = 0; h < eventHandlerMax; h++) {
@@ -180,7 +193,10 @@ void Events::waitNext(word sleepMode) {
 }
 
 void Events::dump(Stream &s) {
-	for (int q = 0; q < queueSize; q++) {
+	s.print("* max queueSize was ");s.println(maxQueueSize);
+	maxQueueSize = 0;
+
+	for (int q = 0; q < queueSize && q < MAX_QUEUE_SIZE; q++) {
 		s.print("* q["); s.print(q); s.print("] = ");
 		s.print(eventQueueTypes[q]); s.print(" / ");; s.println(eventQueueDetails[q]);
 	}
@@ -243,7 +259,11 @@ Events::eventHandler *Events::registerInterval(unsigned long ms, int count, Even
 	}
 
 	result->timerSpec.delay = ms;
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+	result->timerSpec.next = (myMillis() + ms) * 1000;
+#else
 	result->timerSpec.next = (millis() + ms) * 1000 + (micros() % 1000);
+#endif
 	result->timerSpec.count = count;
 
 	// TODO : update global delay if empty or if "next" is before

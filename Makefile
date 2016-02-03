@@ -1,48 +1,18 @@
-# the directory this project is in
-# must be defined for generic makefile to work
-export PROJECT_DIR := $(dir $(realpath ${MAKEFILE_LIST}))
+# it's just a library
+TODO := lib
 
-# to define to ArduinoCore root directory 
-CORE_DIR := ${PROJECT_DIR}../ArduinoCore/
+include ${ARDDUDE_DIR}/etc/target.mk
 
-export EXCLUDE_DIRS := makePolice
+$(info TARGET_PLATFORM = ${TARGET_PLATFORM})
 
-# other arduino librairies project pathes this project depends on
-export DEPENDENCIES := ${CORE_DIR}../ArduinoLibs/
+INCLUDE_FLAGS_EXTRA += $(addprefix -I,${LIBRARIES_DIRS} .)
 
-# generate assembler source code also
-export WITH_ASSEMBLY := yes
+SOURCE_EXCLUDE_PATTERNS := /examples/ /tests/
 
-# generate eeprom image
-export WITH_EEPROM := no
-
-# print size of geretated segments 
-export WITH_PRINT_SIZE := no
-
-# only for programs : launch upload
-export WITH_UPLOAD := no
-# where to upload
-# TODO : try to auto detect with lsusb + /proc exploration
-export UPLOAD_DEVICE := /dev/ttyACM0
-
-# if different of containing dir
-#export LIB_NAME := 
-# TODO : add a "if" on TARGET to launch on this target, or for each known one
-
-# call lib.makefile for a utilities library or bin.makefile for a program
-all:
-	${MAKE} -f ${CORE_DIR}etc/lib.makefile $@
-	
-upload console:
-	${MAKE} \
-		DEPENDENCIES="${DEPENDENCIES} ${CORE_DIR}../ArduinoTools/" \
-		-f ${CORE_DIR}etc/bin.makefile $@
-.PHONY: examples
-
-clean:
-ifeq (${TARGET},)
-	rm -rf ${PROJECT_DIR}target/*
+ifeq (${TARGET_PLATFORM},sam)
+  SOURCE_EXCLUDES := events/ pwm/
+  SOURCE_EXCLUDE_PATTERNS += ArduinoTools.cpp
 endif
-ifneq (${TARGET},)
-	rm -rf ${PROJECT_DIR}target/${TARGET}
-endif
+
+
+include ${ARDDUDE_DIR}/etc/main.mk

@@ -5,7 +5,11 @@
 
 #include "setInterval.h"
 
-#include "Arduino.h"
+#include <Arduino.h>
+#ifdef WITHOUT_MILLIS_FUNCTIONS
+#include "myMillis/myMillis.h"
+#define millis myMillis
+#endif
 
 #ifndef NULL
 #define NULL (0)

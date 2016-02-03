@@ -36,33 +36,36 @@ void parseInput(byte *str, const int len, Stream &channel) {
 			}
 			channel.println("'.");
 
-			int value = 0, b = 10, s = 1;
-			for (int j = 1; j < len; j++) {
-				if (j == 1 && (char)str[j] == 'x') {
-					b = 16;
-				} else if (j == 1 && (char)str[j] == '-') {
-					s = -1;
-				} else {
-					value = value * b + convChar((char)str[j]);
-				}
-			}
-			value = value * s;
-
-			if (items[i].type == 'f' || items[i].type == 'I') {
-				((destFuncInt)(items[i].destination))(value, channel);
-			} else if (items[i].type == 'B') {
-				((destFuncByte)(items[i].destination))((byte)value, channel);
-			} else if (items[i].type == 'S') {
+			if (items[i].type == 'S') {
 				str[len] = '\0';
 				((destFuncString)(items[i].destination))((const char *)(str + 1), channel);
-			} else if (items[i].type == 'b') {
-				*((byte *)(items[i].destination)) = value;
-			} else if (items[i].type == 'i') {
-				*((int *)(items[i].destination)) = value;
 			} else if (items[i].type == 's') {
 				str[len] = '\0';
 				for(int j = 1; j <= len; j++) {
 					((char *)(items[i].destination))[j - 1] = str[j];
+				}
+			} else {
+				int value = 0, b = 10, s = 1;
+
+				for (int j = 1; j < len; j++) {
+					if (j == 1 && (char)str[j] == 'x') {
+						b = 16;
+					} else if (j == 1 && (char)str[j] == '-') {
+						s = -1;
+					} else {
+						value = value * b + convChar((char)str[j]);
+					}
+				}
+				value = value * s;
+
+				if (items[i].type == 'f' || items[i].type == 'I') {
+					((destFuncInt)(items[i].destination))(value, channel);
+				} else if (items[i].type == 'B') {
+					((destFuncByte)(items[i].destination))((byte)value, channel);
+				} else if (items[i].type == 'b') {
+					*((byte *)(items[i].destination)) = value;
+				} else if (items[i].type == 'i') {
+					*((int *)(items[i].destination)) = value;
 				}
 			}
 			return;
@@ -71,7 +74,7 @@ void parseInput(byte *str, const int len, Stream &channel) {
 	// unknown command.
 	channel.print("!! Unknown command '");
 	channel.print(str[0], DEC);
-	channel.println("'. ignored.");
+	channel.println("', ignored.");
 }
 
 void handleInput() {
@@ -112,7 +115,9 @@ void handleInput(Stream &channel, bool echo) {
 	// handle input
 	for (i = 0; i < current; i++) {
 		if (buffer[i] == '\n' || buffer[i] == '\r') {
-			parseInput(buffer, i, channel);
+			if (i > 0) { // skip empty lines
+				parseInput(buffer, i, channel);
+			}
 			// skip newlines
 			do {
 				i++;
@@ -131,6 +136,7 @@ void handleInput(Stream &channel, bool echo) {
 	if (current == SERIAL_INPUT_MAX_LEN) {
 		// buffer overflow => parse or ignore ?
 		// for the moment, skip data.
+		channel.print("\nLine to long, input aborted.\n");
 		current = 0;
 	}
 }

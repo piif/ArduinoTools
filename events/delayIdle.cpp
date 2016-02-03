@@ -14,14 +14,14 @@ void delayIdleISR(int data) {
 }
 
 /**
- * TODO rÈflÈchir ‡ 2 version d'utilisation de timer 0 :
- * - une qui garde millis()/micros() fonctionnels => on sait qu'on sera rÈveillÈ rÈguliËrement par timer0_OVF, on se contente donc de compter les millis
- * - une qui flingue ces mÈthodes et se pose ‡ la place. dans ce cas, on peut mettre un prescale pour rester vraiment idle le plus longtemps possible
- *   on peut alors changer le fonctionnement de millis() et laisser tomber micros() (sachant de delayMicros() continue ‡ marcher lui)
- *   - on place un prescale et un OCRA permettant d'appeler OCIE0A 1 fois par ms => Áa permet de mettre ‡ jour un compteur de millis
- *   - si on demande ‡ s'arrÈter plus longtemps, on change le prescale pour attendre plus longtemps et au rÈveil on met ‡ jour le compteur de milis
- *     selon prescale et la valeur courante de timer0. aprËs cela, on remet le bon prescale et on adapte la valeur du compteur pour pas se dÈcaler trop.
- *     selon les combinaisons de prescale/OCRA/F_CPU qui collent, on peut par exemple prÈvoir un delayIdle de 2, 4, 8, 16 ms qui embraye ensuite
+ * TODO r√©fl√©chir √† 2 version d'utilisation de timer 0 :
+ * - une qui garde millis()/micros() fonctionnels => on sait qu'on sera rveill√© r√©guli√©rement par timer0_OVF, on se contente donc de compter les millis
+ * - une qui flingue ces m√©thodes et se pose √† la place. dans ce cas, on peut mettre un prescale pour rester vraiment idle le plus longtemps possible
+ *   on peut alors changer le fonctionnement de millis() et laisser tomber micros() (sachant de delayMicros() continue √† marcher lui)
+ *   - on place un prescale et un OCRA permettant d'appeler OCIE0A 1 fois par ms => √ßa permet de mettre √† jour un compteur de millis
+ *   - si on demande √† s'arr√™ter plus longtemps, on change le prescale pour attendre plus longtemps et au r√©veil on met √† jour le compteur de milis
+ *     selon prescale et la valeur courante de timer0. apr√®s cela, on remet le bon prescale et on adapte la valeur du compteur pour pas se d√©caler trop.
+ *     selon les combinaisons de prescale/OCRA/F_CPU qui collent, on peut par exemple pr√©voir un delayIdle de 2, 4, 8, 16 ms qui embraye ensuite
  *     sur un delay de la valeur restante
  */
 bool delayIdleWith(unsigned long microseconds, byte timer, word sleep_mode, bool cancelOnInterrupt) {

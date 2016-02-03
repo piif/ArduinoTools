@@ -36,7 +36,7 @@ void hexDump(byte *data, int len, Stream *s) {
 	while(iData < (word)len) {
 		if ((iData & 0xF) == 0) {
 			if (iData != 0) {
-				s->write(line, sizeof(HexDumpModel) - 1);
+				s->write((byte *)line, sizeof(HexDumpModel) - 1);
 			}
 			memcpy(line, HexDumpModel, sizeof(HexDumpModel));
 			iData = 0, iHex = 6, iChar = 55;
@@ -54,6 +54,6 @@ void hexDump(byte *data, int len, Stream *s) {
 		iData++;
 	}
 	if ((iData & 0xF) != 0) {
-		s->write(line, sizeof(HexDumpModel) - 1);
+		s->write((byte *)line, sizeof(HexDumpModel) - 1);
 	}
 }
