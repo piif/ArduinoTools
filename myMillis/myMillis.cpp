@@ -89,7 +89,13 @@ short initTimerMillis(byte wgm, byte top, byte prescale) {
 //	Serial.print("clock_ticks_per_ovf : "); Serial.println(clock_ticks_per_ovf);
 
 	// and activate interrupt
+#if defined(TIMSK0)
 	bitSet(TIMSK0, TOIE0);
+#elif defined(TIMSK)
+	bitSet(TIMSK, TOIE0);
+#else
+#error unsupported architecture
+#endif
 
 	return 0;
 }

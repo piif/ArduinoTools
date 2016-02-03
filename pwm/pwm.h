@@ -126,10 +126,11 @@
 
 /** ATtiny *5 */
 #define PWM_0_A 0
+#define PWM_NOT_1_A 0
 #define PWM_0_B 1
-// !OC1A
 #define PWM_1_A 1
 #define PWM_1_B 4
+#define PWM_NOT_1_B 3
 
 #else
 #error Unknown arduino model
