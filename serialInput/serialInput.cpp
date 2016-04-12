@@ -5,11 +5,11 @@
 #include "serialInput.h"
 #include "Arduino.h"
 
-byte buffer[SERIAL_INPUT_MAX_LEN + 1];
-int current = 0;
+static byte buffer[SERIAL_INPUT_MAX_LEN + 1];
+static int current = 0;
 
-int nbItems = 0;
-InputItem *items;
+static int nbItems = 0;
+static InputItem *items;
 
 int registerInput(int _nbItems, InputItem *_items) {
 	nbItems = _nbItems;

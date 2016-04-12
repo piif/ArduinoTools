@@ -255,6 +255,7 @@
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="arduino_due_x_dbg"/>
 		<configuration configurationName="attinyx5"/>
+		<configuration configurationName="unoNoMillis"/>
 		<configuration configurationName="Yun"/>
 		<configuration configurationName="Mega"/>
 		<configuration configurationName="uno">
@@ -265,6 +266,7 @@
 			<resource resourceType="PROJECT" workspacePath="/ArduinoTools"/>
 		</configuration>
 		<configuration configurationName="Micro"/>
+		<configuration configurationName="attinyx5noMillis"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
