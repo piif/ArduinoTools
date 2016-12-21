@@ -1,5 +1,6 @@
 /**
- * lib minimale pour appeler une fonction à intervalles réguliers, à la façon du setInterval en js
+ * simple library to repeat calls to a function every given delay, like js setInterval function
+ * this version doesn't use timers nor interrupts
  */
 
 #ifndef SET_INTERVAL_H
@@ -10,22 +11,24 @@
 #endif
 
 /**
- * constante pour indiquer une erreur
+ * constant to return on error
  */
-#define SET_INTERVAL_ERROR ((setIntervalTimer)-1)
+#define SET_INTERVAL_ERROR ((setIntervalTimer)-2)
+#define SET_INTERVAL_FREE 0
+#define SET_INTERVAL_PAUSED -1
 
 /**
- * le nombre max de timer qu'on peut lancer en même temps
+ * max number of simultaneous timers
  */
 #define MAX_INTERVAL 10
 
 /**
- * le type d'objet retourné par setInterval
+ * handle returned by setInterval
  */
 typedef int setIntervalTimer;
 
 /**
- * prototype des fonctions à appeler
+ * prototype for callback functions
  * void *userData : pointer passed to setInterval call
  * long delta : called function with ms late
  * int missed : number of call missed
@@ -33,17 +36,18 @@ typedef int setIntervalTimer;
 typedef void (setIntervalFunction)(void *, long, int);
 
 /**
- * défini un timer qui appellera la fonction "callback" toutes les "ms" millisecondes
+ * define a timer which calls "callback" function every "ms" milliseconds
  */
 setIntervalTimer setInterval(long ms, setIntervalFunction *callback, void *userData);
 
 /**
- * change le délai d'appel du timer passé en argument
+ * change delay for this timer
  */
 setIntervalTimer changeInterval(setIntervalTimer timer, long ms);
+setIntervalTimer changeInterval(setIntervalTimer timer, long ms, setIntervalFunction *callback, void *userData);
 
 /**
- * fonction a appeler en boucle pour effectuer les appels
+ * function to call from main loop() to handle timers
  */
 void setIntervalStep();
 
