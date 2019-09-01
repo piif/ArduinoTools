@@ -6,10 +6,8 @@
 #ifndef EVENTS_DELAYIDLE_H
 #define EVENTS_DELAYIDLE_H 1
 
-#include <Arduino.h>
-
 #define USE_INTERRUPT_TIMER_HANDLER
-#include <ArduinoTools.h>
+#include "LowLevelTools.h"
 
 // for sleep modes debug
 extern int innerloops;

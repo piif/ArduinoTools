@@ -1,6 +1,5 @@
 #ifndef EVENTS_EVENTS_H
 #define EVENTS_EVENTS_H
-#include <Arduino.h>
 
 // CALLER MUST DECIDE WHICH KIND OF EVENTS HE WANTS, BY #DEFINING
 // ONE OR SEVERAL OF
@@ -25,7 +24,7 @@
 // 1024 is one of the timer prescales => will need less timer loops
 #define TIMER_EVENT_PRECISION 1024
 
-#include <ArduinoTools.h>
+#include "LowLevelTools.h"
 
 class Events {
 public:

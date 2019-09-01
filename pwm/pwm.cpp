@@ -1,7 +1,7 @@
 #include "pwm.h"
 
 #include <avr/io.h>
-#include <ArduinoTools.h>
+#include <LowLevelTools.h>
 
 byte getPrescale(byte timer, int divider) {
 #if defined __AVR_ATmega32U4__
@@ -73,7 +73,6 @@ byte getPrescale(byte timer, int divider) {
 void computePWM(byte timer, unsigned long &frequency, word &prescale, word &top) {
 	// compute ticks number
 	unsigned long ticks = F_CPU / frequency;
-
 	word timerMax =
 #if defined __AVR_ATmega32U4__
 		(timer == 1 || timer == 3) ? 65536 : 256;
@@ -175,6 +174,7 @@ bool setPWM(byte pwm, unsigned int icr,
 	if (pwm == 1) {
 		TCCR1_bits->_COM1A = com_a;
 		TCCR1_bits->_CS1 = cs;
+		TCCR1_bits->_CTC1 = wgm >> 2;
 		TCCR1_bits->_PWM1A = wgm;
 		GTCCR_bits->_PWM1B = wgm >> 1;
 		GTCCR_bits->_COM1B = com_b;
