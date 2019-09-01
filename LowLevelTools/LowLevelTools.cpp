@@ -3,7 +3,7 @@
 #endif
 
 #define NOT_IN_MAIN
-#include "ArduinoTools.h"
+#include "LowLevelTools.h"
 
 #ifndef _VECTOR_SIZE
 #define NB_INTERRUPT _VECTORS_SIZE / 4

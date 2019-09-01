@@ -1,7 +1,7 @@
 #define NOT_IN_MAIN
 #include "delayIdle.h"
 
-#include <pwm/pwm.h>
+#include <pwm.h>
 
 volatile long delayLoops[_INTERRUPTS_TIMER_TOTAL] = { -1, };
 volatile bool cancelFlag[_INTERRUPTS_TIMER_TOTAL] = { false, };

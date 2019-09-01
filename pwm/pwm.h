@@ -49,6 +49,10 @@
 #define SET_PWM_1_B     2
 #define SET_PWM_1_AB    3
 
+// to be ORed with SET_PWM_1_*
+#define WGM_1_FAST_MAX   0
+#define WGM_1_FAST_OCR1C   4
+
 // not PWM
 #define COMPARE_OUTPUT_MODE_CLEAR 2
 #define COMPARE_OUTPUT_MODE_SET   3
