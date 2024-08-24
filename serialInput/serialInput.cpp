@@ -6,7 +6,7 @@
 #include "Arduino.h"
 
 static byte buffer[SERIAL_INPUT_MAX_LEN + 1];
-static int current = 0;
+static int bufferStart = 0, bufferEnd = 0;
 
 static int nbItems = 0;
 static InputItem *items;
@@ -24,7 +24,7 @@ int convChar(char c) {
 	return 0;
 }
 
-void parseInput(byte *str, const int len, Stream &channel) {
+int parseInput(byte *str, const int len, Stream &channel) {
 	for (int i = 0; i < nbItems; i++) {
 		if (items[i].prefix == str[0]) {
 			// command found
@@ -38,12 +38,13 @@ void parseInput(byte *str, const int len, Stream &channel) {
 
 			if (items[i].type == 'S') {
 				str[len] = '\0';
-				((destFuncString)(items[i].destination))((const char *)(str + 1), channel);
+				return ((destFuncString)(items[i].destination))((const char *)(str + 1), channel);
 			} else if (items[i].type == 's') {
 				str[len] = '\0';
 				for(int j = 1; j <= len; j++) {
 					((char *)(items[i].destination))[j - 1] = str[j];
 				}
+				return len;
 			} else {
 				int value = 0, b = 10, s = 1;
 
@@ -59,84 +60,91 @@ void parseInput(byte *str, const int len, Stream &channel) {
 				value = value * s;
 
 				if (items[i].type == 'f' || items[i].type == 'I') {
-					((destFuncInt)(items[i].destination))(value, channel);
+					return ((destFuncInt)(items[i].destination))(value, channel);
 				} else if (items[i].type == 'B') {
-					((destFuncByte)(items[i].destination))((byte)value, channel);
+					return ((destFuncByte)(items[i].destination))((byte)value, channel);
 				} else if (items[i].type == 'b') {
-					*((byte *)(items[i].destination)) = value;
+					return *((byte *)(items[i].destination)) = value;
 				} else if (items[i].type == 'i') {
-					*((int *)(items[i].destination)) = value;
+					return *((int *)(items[i].destination)) = value;
 				}
 			}
-			return;
 		}
 	}
 	// unknown command.
 	channel.print("!! Unknown command '");
 	channel.print(str[0], DEC);
 	channel.println("', ignored.");
+	return -1;
 }
 
-void handleInput() {
+int handleInput() {
 	handleInput(Serial, true);
 }
 
-void handleInput(Stream &channel) {
+int handleInput(Stream &channel) {
 	handleInput(channel, true);
 }
 
-void handleInput(bool echo) {
+int handleInput(bool echo) {
 	handleInput(Serial, echo);
 }
 
-void handleInput(Stream &channel, bool echo) {
+int handleInput(Stream &channel, bool echo) {
+	// skip newlines
+	while (bufferStart < bufferEnd && (buffer[bufferStart] == '\n' || buffer[bufferStart] == '\r')) {
+		bufferStart++;
+	}
+	if (bufferStart > 0) {
+		// newlines skipped, or reentrant call => must shift data
+		// shift remaining bytes in buffer
+		int j = 0;
+		while (bufferStart < bufferEnd) {
+			buffer[j] = buffer[bufferStart];
+			bufferStart++;
+			j++;
+		}
+		bufferStart = 0;
+		bufferEnd = j;
+	}
+
 	// read data if any
 	// TODO : handle this by interruptions ?
 	int avail = channel.available();
-	if (avail > SERIAL_INPUT_MAX_LEN - current) {
-		avail = SERIAL_INPUT_MAX_LEN - current;
+	if (avail > SERIAL_INPUT_MAX_LEN - bufferEnd) {
+		avail = SERIAL_INPUT_MAX_LEN - bufferEnd;
 	}
 	// TODO : consider readBytes will work since available was called just before ...
 	while (avail) {
-		buffer[current] = channel.read();
+		buffer[bufferEnd] = channel.read();
 		if (echo) {
-			channel.print((char)buffer[current]);
+			channel.print((char)buffer[bufferEnd]);
 		}
-		current++;
+		bufferEnd++;
 		avail--;
 	}
-	// handle data if available. may happen even if to new data read,
-	//  if data are still in buffer after command parsing in preceding call
-	if (current == 0) {
-		return;
+
+	// handle data if available. may happen even if no new data read,
+	// if data are still in buffer after command parsing in previous call
+	if (bufferEnd == 0) {
+		return -1;
 	}
 
-	int i, j;
+	int i;
 	// handle input
-	for (i = 0; i < current; i++) {
+	for (i = 0; i < bufferEnd; i++) {
 		if (buffer[i] == '\n' || buffer[i] == '\r') {
 			if (i > 0) { // skip empty lines
-				parseInput(buffer, i, channel);
+				bufferStart = i+1; // => next call to handleInput will read remaining buffer
+				return parseInput(buffer, i, channel);
 			}
-			// skip newlines
-			do {
-				i++;
-			} while (i < current && (buffer[i] == '\n' || buffer[i] == '\r'));
-			// move end of buffer at its start
-			j = 0;
-			while (i < current) {
-				buffer[j] = buffer[i];
-				i++;
-				j++;
-			}
-			current = j;
-			return;
 		}
 	}
-	if (current == SERIAL_INPUT_MAX_LEN) {
+	if (bufferEnd == SERIAL_INPUT_MAX_LEN) {
 		// buffer overflow => parse or ignore ?
 		// for the moment, skip data.
 		channel.print("\nLine to long, input aborted.\n");
-		current = 0;
+		bufferEnd = 0;
 	}
+	return -1;
 }

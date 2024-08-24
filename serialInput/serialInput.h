@@ -9,9 +9,9 @@
 
 #define SERIAL_INPUT_MAX_LEN 50
 
-typedef void (*destFuncByte)(const byte value, Stream &channel);
-typedef void (*destFuncInt)(const int value, Stream &channel);
-typedef void (*destFuncString)(const char *s, Stream &channel);
+typedef int (*destFuncByte)(const byte value, Stream &channel);
+typedef int (*destFuncInt)(const int value, Stream &channel);
+typedef int (*destFuncString)(const char *s, Stream &channel);
 
 typedef struct inputItem {
 	// char to react to
@@ -32,21 +32,21 @@ int registerInput(int nbItems, InputItem *items);
 /**
  * function to call to handle serial input
  */
-void handleInput(Stream &channel);
+int handleInput(Stream &channel);
 
 /**
  * same function with argument to specify if input must be echo'ed back
  */
-void handleInput(Stream &channel, bool echo);
+int handleInput(Stream &channel, bool echo);
 
 /**
  * function to call to handle serial input
  */
-void handleInput();
+int handleInput();
 
 /**
  * same function with argument to specify if input must be echo'ed back
  */
-void handleInput(bool echo);
+int handleInput(bool echo);
 
 #endif
