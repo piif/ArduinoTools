@@ -1,10 +1,9 @@
 #define NOT_IN_MAIN
-#include <Arduino.h>
 #include "events.h"
 #include "delayIdle.h"
 
 #ifdef WITHOUT_MILLIS_FUNCTIONS
-#include "myMillis/myMillis.h"
+#include "myMillis.h"
 #endif
 
 #define MAX_QUEUE_SIZE 5
