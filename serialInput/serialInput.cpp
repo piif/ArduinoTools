@@ -79,15 +79,15 @@ int parseInput(byte *str, const int len, Stream &channel) {
 }
 
 int handleInput() {
-	handleInput(Serial, true);
+	return handleInput(Serial, true);
 }
 
 int handleInput(Stream &channel) {
-	handleInput(channel, true);
+	return handleInput(channel, true);
 }
 
 int handleInput(bool echo) {
-	handleInput(Serial, echo);
+	return handleInput(Serial, echo);
 }
 
 int handleInput(Stream &channel, bool echo) {

@@ -25,26 +25,19 @@ Stream& operator<<(Stream& stream, unsigned long v);
 Stream& operator<<(Stream& stream, double v);
 Stream& operator<<(Stream& stream, const Printable &v);
 
+struct BaseN {
+    unsigned long value;
+    unsigned short base; // 2 or 16 supported only
+    unsigned short len;
+    char pad;
+    explicit BaseN(unsigned long v, unsigned short _base, unsigned short _len = 0, char _pad = ' ') :
+      value(v), base(_base), len(_len), pad(_pad) {}
+};
+
+struct BaseN bin(unsigned long value, unsigned short len = 0, char pad = ' ');
+struct BaseN hex(unsigned long value, unsigned short len = 0, char pad = ' ');
+Stream& operator<<(Stream& os, BaseN b);
+
 #define EOL '\n'
-
-/*
-  Example :
-    byte bt = 123;
-    Serial << "test 123:16 = " << toHex(bt, 1) << " truncated = " << toHex(bt) << EOL;
-    Serial << "test 123:2  = " << toBin(bt, 4) << " truncated = " << toBin(bt) << EOL;
-    word wd = 0b111101101;
-    Serial << "test 0755   = " << toOct(wd, 4) << " = " << toBin(wd) << EOL;
-  Output :
-    test 123:16 = b truncated = 7b
-    test 123:2  = 1011 truncated = 01111011
-    test 0755   = 0755 = 0000000111101101
-*/
-
-const char *toHex(byte value, byte size = 2);
-const char *toHex(word value, byte size = 4);
-const char *toOct(byte value, byte size = 3);
-const char *toOct(word value, byte size = 6);
-const char *toBin(byte value, byte size = 8);
-const char *toBin(word value, byte size =16);
 
 #endif

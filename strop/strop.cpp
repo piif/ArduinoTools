@@ -45,41 +45,38 @@ Stream& operator<<(Stream& stream, const Printable &v) {
     return stream;
 }
 
-static const char hexChars[]  = "0123456789abcdef";
-/* static buffer for conversion operation results
- * /!\ it's static thus not reentrant
- */
-static char buffer[17];
-
-const char *toBaseN(word value, byte base, byte digitLen, byte size, byte limit) {
-    char *p = buffer;
-    base--;
-    if (size > limit) {
-        size = limit;
+Stream& operator<<(Stream& os, BaseN b) {
+    // number of bits per digit
+    unsigned short digit_len = (b.base==2) ? 1 : 4;
+    // bit mask for 1 digit
+    unsigned long mask = b.base-1;
+    unsigned short shift;
+    if (b.len != 0) {
+        shift = (b.len-1)*digit_len;
+    } else {
+        shift = (sizeof(mask) * __CHAR_BIT__)-digit_len;
     }
-    do {
-        size--;
-        *p++ = hexChars[(value >> (digitLen*size)) & base];
-    } while(size);
-    *p = '\0';
-    return buffer;
+    mask <<= shift;
+    while (shift > 0 && (mask & b.value) == 0) {
+        if (b.len != 0) {
+            os << b.pad;
+        }
+        shift -= digit_len;
+        mask >>= digit_len;
+    }
+    while(mask) {
+        unsigned short d = (mask & b.value) >> shift;
+        os << (char)( d >= 10 ? (d-10+'a') : (d+'0') );
+        shift -= digit_len;
+        mask >>= digit_len;
+    }
+    return os;
 }
 
-const char *toHex(byte value, byte size = 2) {
-    return toBaseN(value, 16, 4, size, 2);
+BaseN bin(unsigned long value, unsigned short len = 0, char pad = ' ') {
+    return BaseN(value, 2, len, pad);
 }
-const char *toHex(word value, byte size = 4) {
-    return toBaseN(value, 16, 4, size, 4);
-}
-const char *toOct(byte value, byte size = 3) {
-    return toBaseN(value, 8, 3, size, 3);
-}
-const char *toOct(word value, byte size = 6) {
-    return toBaseN(value, 8, 3, size, 6);
-}
-const char *toBin(byte value, byte size = 8) {
-    return toBaseN(value, 2, 1, size, 8);
-}
-const char *toBin(word value, byte size = 16) {
-    return toBaseN(value, 2, 1, size, 16);
+
+BaseN hex(unsigned long value, unsigned short len = 0, char pad = ' ') {
+    return BaseN(value, 16, len, pad);
 }
