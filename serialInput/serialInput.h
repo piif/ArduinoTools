@@ -10,7 +10,8 @@
 #define SERIAL_INPUT_MAX_LEN 50
 
 typedef int (*destFuncByte)(const byte value, Stream &channel);
-typedef int (*destFuncInt)(const int value, Stream &channel);
+typedef int (*destFuncInt )(const int value, Stream &channel);
+typedef int (*destFuncLong)(const long value, Stream &channel);
 typedef int (*destFuncString)(const char *s, Stream &channel);
 
 typedef struct inputItem {

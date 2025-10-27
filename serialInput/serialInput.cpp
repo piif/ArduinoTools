@@ -46,7 +46,8 @@ int parseInput(byte *str, const int len, Stream &channel) {
 				}
 				return len;
 			} else {
-				int value = 0, b = 10, s = 1;
+				long value = 0;
+				short b = 10, s = 1;
 
 				for (int j = 1; j < len; j++) {
 					if (j == 1 && (char)str[j] == 'x') {
@@ -60,13 +61,17 @@ int parseInput(byte *str, const int len, Stream &channel) {
 				value = value * s;
 
 				if (items[i].type == 'f' || items[i].type == 'I') {
-					return ((destFuncInt)(items[i].destination))(value, channel);
+					return ((destFuncInt)(items[i].destination))((int)value, channel);
 				} else if (items[i].type == 'B') {
 					return ((destFuncByte)(items[i].destination))((byte)value, channel);
+				} else if (items[i].type == 'L') {
+					return ((destFuncLong)(items[i].destination))(value, channel);
 				} else if (items[i].type == 'b') {
 					return *((byte *)(items[i].destination)) = value;
 				} else if (items[i].type == 'i') {
 					return *((int *)(items[i].destination)) = value;
+				} else if (items[i].type == 'l') {
+					return *((long *)(items[i].destination)) = value;
 				}
 			}
 		}
