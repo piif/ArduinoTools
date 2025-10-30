@@ -71,7 +71,50 @@
 #endif
 
 // Arduino output associated with PWM outs
-#if defined __AVR_ATmega2560__
+#if defined __AVR_ATtinyX5__
+
+    /** ATtiny *5 */
+    #define PWM_0_A 0
+    #define PWM_0_B 1
+    #define PWM_1_A 1 
+    #define PWM_NOT_1_A 0
+    #define PWM_1_B 4
+    #define PWM_NOT_1_B 3
+
+#elif defined __AVR_ATmega328P__
+
+    /** UNO */
+    #define PWM_0_A 6
+    #define PWM_0_B 5
+    #define PWM_1_A 9
+    #define PWM_1_B 10
+    #define PWM_2_A 11
+    #define PWM_2_B 3
+
+#elif defined __AVR_ATmega644P__
+
+    /** REPRAP */
+    #define PWM_0_A 3
+    #define PWM_0_B 4
+    #define PWM_1_A 13
+    #define PWM_1_B 12
+    #define PWM_2_A 15
+    #define PWM_2_B 14
+
+#elif defined __AVR_ATmega32U4__
+
+    /** Micro / Leonardo / Yun / Fio */
+    #define PWM_0_A 11
+    #define PWM_0_B 3
+    #define PWM_1_A 9
+    #define PWM_1_B 10
+    #define PWM_1_C 11
+    #define PWM_3_A 5
+    #define PWM_4_A 13
+    #define PWM_4_B 10
+    #define PWM_4_C 6
+
+#elif defined __AVR_ATmega2560__
 
     /** MEGA */
     #define PWM_0_A 13
@@ -90,39 +133,6 @@
     #define PWM_5_A 46
     #define PWM_5_B 45
     #define PWM_5_C 44
-
-#elif defined __AVR_ATmega328P__
-
-    /** UNO */
-    #define PWM_0_A 6
-    #define PWM_0_B 5
-    #define PWM_1_A 9
-    #define PWM_1_B 10
-    #define PWM_2_A 11
-    #define PWM_2_B 3
-
-#elif defined __AVR_ATmega32U4__
-
-    /** Micro / Leonardo / Yun / Fio */
-    #define PWM_0_A 11
-    #define PWM_0_B 3
-    #define PWM_1_A 9
-    #define PWM_1_B 10
-    #define PWM_1_C 11
-    #define PWM_3_A 5
-    #define PWM_4_A 13
-    #define PWM_4_B 10
-    #define PWM_4_C 6
-
-#elif defined __AVR_ATtinyX5__
-
-    /** ATtiny *5 */
-    #define PWM_0_A 0
-    #define PWM_0_B 1
-    #define PWM_1_A 1 
-    #define PWM_NOT_1_A 0
-    #define PWM_1_B 4
-    #define PWM_NOT_1_B 3
 
 #else
     #error Unknown arduino model

@@ -21,65 +21,69 @@ byte getPrescale(byte timer, int divider) {
 #if defined __AVR_ATmega32U4__
     if (timer == 4) {
         switch (divider) {
-        case     1: return PWM4_PRESCALER_1;
-        case     2: return PWM4_PRESCALER_2;
-        case     4: return PWM4_PRESCALER_4;
-        case     8: return PWM4_PRESCALER_8;
-        case    16: return PWM4_PRESCALER_16;
-        case    32: return PWM4_PRESCALER_32;
-        case    64: return PWM4_PRESCALER_64;
-        case   128: return PWM4_PRESCALER_128;
-        case   256: return PWM4_PRESCALER_256;
-        case   512: return PWM4_PRESCALER_512;
-        case  1024: return PWM4_PRESCALER_1024;
-        case  2048: return PWM4_PRESCALER_2048;
-        case  4096: return PWM4_PRESCALER_4096;
-        case  8192: return PWM4_PRESCALER_8192;
-        case 16384: return PWM4_PRESCALER_16384;
+            case     1: return PWM4_PRESCALER_1;
+            case     2: return PWM4_PRESCALER_2;
+            case     4: return PWM4_PRESCALER_4;
+            case     8: return PWM4_PRESCALER_8;
+            case    16: return PWM4_PRESCALER_16;
+            case    32: return PWM4_PRESCALER_32;
+            case    64: return PWM4_PRESCALER_64;
+            case   128: return PWM4_PRESCALER_128;
+            case   256: return PWM4_PRESCALER_256;
+            case   512: return PWM4_PRESCALER_512;
+            case  1024: return PWM4_PRESCALER_1024;
+            case  2048: return PWM4_PRESCALER_2048;
+            case  4096: return PWM4_PRESCALER_4096;
+            case  8192: return PWM4_PRESCALER_8192;
+            case 16384: return PWM4_PRESCALER_16384;
+            default   : return 0;
         }
-    } else
+    }
 #endif
 #if defined __AVR_ATtinyX5__
     if (timer == 1) {
         switch (divider) {
-        case     1: return PWM1_PRESCALER_1;
-        case     2: return PWM1_PRESCALER_2;
-        case     4: return PWM1_PRESCALER_4;
-        case     8: return PWM1_PRESCALER_8;
-        case    16: return PWM1_PRESCALER_16;
-        case    32: return PWM1_PRESCALER_32;
-        case    64: return PWM1_PRESCALER_64;
-        case   128: return PWM1_PRESCALER_128;
-        case   256: return PWM1_PRESCALER_256;
-        case   512: return PWM1_PRESCALER_512;
-        case  1024: return PWM1_PRESCALER_1024;
-        case  2048: return PWM1_PRESCALER_2048;
-        case  4096: return PWM1_PRESCALER_4096;
-        case  8192: return PWM1_PRESCALER_8192;
-        case 16384: return PWM1_PRESCALER_16384;
+            case     1: return PWM1_PRESCALER_1;
+            case     2: return PWM1_PRESCALER_2;
+            case     4: return PWM1_PRESCALER_4;
+            case     8: return PWM1_PRESCALER_8;
+            case    16: return PWM1_PRESCALER_16;
+            case    32: return PWM1_PRESCALER_32;
+            case    64: return PWM1_PRESCALER_64;
+            case   128: return PWM1_PRESCALER_128;
+            case   256: return PWM1_PRESCALER_256;
+            case   512: return PWM1_PRESCALER_512;
+            case  1024: return PWM1_PRESCALER_1024;
+            case  2048: return PWM1_PRESCALER_2048;
+            case  4096: return PWM1_PRESCALER_4096;
+            case  8192: return PWM1_PRESCALER_8192;
+            case 16384: return PWM1_PRESCALER_16384;
+            default   : return 0;
         }
-    } else
+    }
 #endif
+#if defined __AVR_ATmega328P__ || defined __AVR_ATmega2560__
     if (timer == 2) {
         switch (divider) {
-        case    1: return PWM2_PRESCALER_1;
-        case    8: return PWM2_PRESCALER_8;
-        case   32: return PWM2_PRESCALER_32;
-        case   64: return PWM2_PRESCALER_64;
-        case  128: return PWM2_PRESCALER_128;
-        case  256: return PWM2_PRESCALER_256;
-        case 1024: return PWM2_PRESCALER_1024;
+            case    1: return PWM2_PRESCALER_1;
+            case    8: return PWM2_PRESCALER_8;
+            case   32: return PWM2_PRESCALER_32;
+            case   64: return PWM2_PRESCALER_64;
+            case  128: return PWM2_PRESCALER_128;
+            case  256: return PWM2_PRESCALER_256;
+            case 1024: return PWM2_PRESCALER_1024;
+            default   : return 0;
         }
-    } else {
-        switch (divider) {
+    }
+#endif
+    switch (divider) {
         case    1: return PWMx_PRESCALER_1;
         case    8: return PWMx_PRESCALER_8;
         case   64: return PWMx_PRESCALER_64;
         case  256: return PWMx_PRESCALER_256;
         case 1024: return PWMx_PRESCALER_1024;
-        }
+        default   : return 0;
     }
-    return 0;
 }
 
 unsigned long computePWMforTicks(byte timer, unsigned long ticks, byte &prescale, word &top);
