@@ -61,8 +61,8 @@ byte getPrescale(byte timer, int divider) {
             default   : return 0;
         }
     }
-#endif
-#if defined __AVR_ATmega328P__ || defined __AVR_ATmega2560__
+#else
+#if not defined __AVR_ATmega32U4__
     if (timer == 2) {
         switch (divider) {
             case    1: return PWM2_PRESCALER_1;
@@ -76,6 +76,7 @@ byte getPrescale(byte timer, int divider) {
         }
     }
 #endif
+#endif
     switch (divider) {
         case    1: return PWMx_PRESCALER_1;
         case    8: return PWMx_PRESCALER_8;
@@ -84,6 +85,106 @@ byte getPrescale(byte timer, int divider) {
         case 1024: return PWMx_PRESCALER_1024;
         default   : return 0;
     }
+}
+
+void getTimerForPin(byte pin, byte &timer, byte &output, byte &width) {
+    switch(pin) {
+        case PWM_0_A:
+            timer = 0; output = 0;
+        break;
+        case PWM_0_B:
+            timer = 0; output = 1;
+        break;
+        case PWM_1_A:
+            timer = 1; output = 0;
+        break;
+        case PWM_1_B:
+            timer = 1; output = 1;
+        break;
+#ifdef PWM_1_C
+        case PWM_1_C:
+            timer = 1; output = 2;
+        break;
+#endif
+#ifdef PWM_2_A
+        case PWM_2_A:
+            timer = 2; output = 0;
+        break;
+#endif
+#ifdef PWM_2_B
+        case PWM_2_B:
+            timer = 2; output = 1;
+        break;
+#endif
+#ifdef PWM_3_A
+        case PWM_3_A:
+            timer = 3; output = 0;
+        break;
+#endif
+#ifdef PWM_3_B
+        case PWM_3_B:
+            timer = 3; output = 1;
+        break;
+#endif
+#ifdef PWM_3_C
+        case PWM_3_C:
+            timer = 3; output = 2;
+        break;
+#endif
+#ifdef PWM_4_A
+        case PWM_4_A:
+            timer = 4; output = 0;
+        break;
+#endif
+#ifdef PWM_4_B
+        case PWM_4_B:
+            timer = 4; output = 1;
+        break;
+#endif
+#ifdef PWM_4_C
+        case PWM_4_C:
+            timer = 4; output = 2;
+        break;
+#endif
+#ifdef PWM_5_A
+        case PWM_5_A:
+            timer = 5; output = 0;
+        break;
+#endif
+#ifdef PWM_5_B
+        case PWM_5_B:
+            timer = 5; output = 1;
+        break;
+#endif
+#ifdef PWM_5_C
+        case PWM_5_C:
+            timer = 5; output = 2;
+        break;
+#endif
+        default:
+            timer = 0xFF; output = 0xFF;
+        break;
+    }
+
+    if (timer == 0xFF) {
+        width = 0xFF;
+        return;
+    }
+#if defined __AVR_ATtinyX5__
+    width = 8;
+#else
+#if defined __AVR_ATmega32U4__
+    if (timer == 4) {
+        width = 10;
+        return;
+    }
+#endif // __AVR_ATmega32U4__
+    if (timer == 0 || timer == 2) {
+        width = 8;
+    } else {
+        width = 16;
+    }
+#endif // __AVR_ATtinyX5__
 }
 
 unsigned long computePWMforTicks(byte timer, unsigned long ticks, byte &prescale, word &top);

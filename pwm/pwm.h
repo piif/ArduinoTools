@@ -181,7 +181,7 @@
     #define PWM1_PRESCALER_1024 PWMx_PRESCALER_1024
 #endif
 
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2560__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega644P__)
     #define PWM2_PRESCALER_1    1
     #define PWM2_PRESCALER_8    2
     #define PWM2_PRESCALER_32   3
@@ -213,6 +213,12 @@
 // return prescale constant for given timer and divider
 // returns 0 if this prescale value doesn't exists for this timer
 byte getPrescale(byte timer, int divider);
+
+// retrieve timer number and output associated with given pin
+// timer is set with timer number (0, 1..) or 0xFF if not found
+// output is set to 0 for OCRxA output, 1 for OCRxB, 2 for OCRxC, 0xFF is not found
+// width is set to 8, 10 or 16 depending on 8,10 or 16 bits timer (0xFF if no timer found)
+void getTimerForPin(byte pin, byte &timer, byte &output, byte &width);
 
 // compute nearest prescale and top value for given timer to achieve wanted frequency
 // outputs rounded frequency
