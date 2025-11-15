@@ -28,10 +28,10 @@ int parseInput(byte *str, const int len, Stream &channel) {
 	for (int i = 0; i < nbItems; i++) {
 		if (items[i].prefix == str[0]) {
 			// command found
-			channel.print("\nFound command '");
+			channel.print(F("\nFound command '"));
 			channel.print((char)str[0]);
 			if (len > 1) {
-				channel.print("', '");
+				channel.print(F("', '"));
 				channel.write((str + 1), len - 1);
 			}
 			channel.println("'.");
@@ -77,9 +77,9 @@ int parseInput(byte *str, const int len, Stream &channel) {
 		}
 	}
 	// unknown command.
-	channel.print("!! Unknown command '");
+	channel.print(F("!! Unknown command '"));
 	channel.print(str[0], DEC);
-	channel.println("', ignored.");
+	channel.println(F("', ignored."));
 	return -1;
 }
 
