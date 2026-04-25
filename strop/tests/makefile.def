@@ -1,0 +1,9 @@
+LIBRARY_PATH := ~/GitHub/piif/ArduinoLibs ~/GitHub/piif/ArduinoTools
+
+# FOR UNO
+BOARD := arduino:avr:uno
+PORT := /dev/ttyUSB0
+
+# UNO LGT8Fx
+#BOARD := lgt8fx:avr:328
+#PORT := /dev/ttyUSB0
