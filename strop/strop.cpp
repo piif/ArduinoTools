@@ -36,6 +36,37 @@ Stream& operator<<(Stream& stream, unsigned long v) {
     stream.print(v);
     return stream;
 }
+
+// required to print "long long" values since arduino.h handles only "long"
+void printNumber(Stream& os, unsigned long long n)
+{
+  char buf[8 * sizeof(long long) + 1]; // Assumes 8-bit chars plus \0 byte.
+  char *str = &buf[sizeof(buf) - 1];
+
+  *str = '\0';
+
+  do {
+    char c = n % 10;
+    n /= 10;
+
+    *--str = c + '0';
+  } while(n);
+
+  os.write(str);
+}
+
+Stream& operator<<(Stream& stream, long long v) {
+    if (v < 0) {
+        stream.print('-');
+        v = -v;
+    }
+    printNumber(stream, v);
+    return stream;
+}
+Stream& operator<<(Stream& stream, unsigned long long v) {
+    printNumber(stream, v);
+    return stream;
+}
 Stream& operator<<(Stream& stream, double v) {
     stream.print(v);
     return stream;
@@ -49,7 +80,7 @@ Stream& operator<<(Stream& os, BaseN b) {
     // number of bits per digit
     unsigned short digit_len = (b.base==2) ? 1 : 4;
     // bit mask for 1 digit
-    unsigned long mask = b.base-1;
+    unsigned long long mask = b.base-1;
     unsigned short shift;
     if (b.len != 0) {
         shift = (b.len-1)*digit_len;
@@ -73,10 +104,10 @@ Stream& operator<<(Stream& os, BaseN b) {
     return os;
 }
 
-BaseN bin(unsigned long value, unsigned short len = 0, char pad = ' ') {
+BaseN bin(unsigned long long value, unsigned short len, char pad) {
     return BaseN(value, 2, len, pad);
 }
 
-BaseN hex(unsigned long value, unsigned short len = 0, char pad = ' ') {
+BaseN hex(unsigned long long value, unsigned short len, char pad) {
     return BaseN(value, 16, len, pad);
 }

@@ -4,7 +4,7 @@
  * can be done with this lib, using such syntax :
  *   Serial << "a string " << intVariable << EOL;
  *
- * TODO: DEC, HEX, BIN arguments for integer are not implemented
+ * With the help of https://chat.mistral.ai/ cause I'm not a C++ expert
  * 
  */
 
@@ -22,20 +22,22 @@ Stream& operator<<(Stream& stream, int v);
 Stream& operator<<(Stream& stream, unsigned int v);
 Stream& operator<<(Stream& stream, long v);
 Stream& operator<<(Stream& stream, unsigned long v);
+Stream& operator<<(Stream& stream, long long v);
+Stream& operator<<(Stream& stream, unsigned long long v);
 Stream& operator<<(Stream& stream, double v);
 Stream& operator<<(Stream& stream, const Printable &v);
 
 struct BaseN {
-    unsigned long value;
+    unsigned long long value;
     unsigned short base; // 2 or 16 supported only
     unsigned short len;
     char pad;
-    explicit BaseN(unsigned long v, unsigned short _base, unsigned short _len = 0, char _pad = ' ') :
+    explicit BaseN(unsigned long long v, unsigned short _base, unsigned short _len = 0, char _pad = ' '):
       value(v), base(_base), len(_len), pad(_pad) {}
 };
 
-struct BaseN bin(unsigned long value, unsigned short len = 0, char pad = ' ');
-struct BaseN hex(unsigned long value, unsigned short len = 0, char pad = ' ');
+struct BaseN bin(unsigned long long value, unsigned short len = 0, char pad = ' ');
+struct BaseN hex(unsigned long long value, unsigned short len = 0, char pad = ' ');
 Stream& operator<<(Stream& os, BaseN b);
 
 #define EOL '\n'
